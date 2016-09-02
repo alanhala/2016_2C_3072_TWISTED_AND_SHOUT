@@ -1,8 +1,8 @@
 <tgcScene>
-  <name>scene</name>
+  <name>adoquines</name>
   <texturesExport enabled="True" dir="Textures" />
   <lightmapExport enabled="False" dir="LightMaps" />
-  <sceneBoundingBox min="[-100.7098,0,-98.1661]" max="[106.0758,0,98.3119]" />
+  <sceneBoundingBox min="[-208.0556,0,-194.3554]" max="[1793.652,0,1616.106]" />
   <materials count="1">
     <m name="Standardmaterial" type="Standardmaterial">
       <ambient>[0,0,0,0]</ambient>
@@ -10,21 +10,21 @@
       <specular>[0,0,0,0]</specular>
       <opacity>1</opacity>
       <alphaBlendEnable>False</alphaBlendEnable>
-      <bitmap uvTiling="[1,1]" uvOffset="[1,1]">concretoPoroso.jpg</bitmap>
+      <bitmap uvTiling="[1,1]" uvOffset="[1,1]">adoquin2.jpg</bitmap>
     </m>
   </materials>
   <meshes count="1">
-    <mesh name="Plane_14" layer="Default" type="Original" matId="0" color="[1,1,1]" visibility="1.0" lightmap="">
-      <boundingBox min="[-100.7098,0,-98.1661]" max="[106.0758,0,98.3119]" />
+    <mesh name="Plane_1" layer="Default" type="Original" matId="0" color="[1,1,1]" visibility="1.0" lightmap="">
+      <boundingBox min="[-208.0556,0,-194.3554]" max="[1793.652,0,1616.106]" />
       <coordinatesIdx count="6">0 1 2 0 2 3 </coordinatesIdx>
       <textCoordsIdx count="6">0 1 2 0 2 3 </textCoordsIdx>
       <colorsIdx count="6">0 0 0 0 0 0 </colorsIdx>
       <matIds count="1">0 </matIds>
       <textCoordsLightMapIdx count="0">
       </textCoordsLightMapIdx>
-      <vertices count="12">-100.7098 0 -98.1661 106.0758 0 -98.1661 106.0758 0 98.3119 -100.7098 0 98.3119 </vertices>
+      <vertices count="12">-208.0556 0 -194.3554 1793.652 0 -194.3554 1793.652 0 1616.106 -208.0556 0 1616.106 </vertices>
       <normals count="12">0 -1 0 0 -1 0 0 -1 0 0 -1 0 </normals>
-      <texCoords count="8">1 1 0 1 0 0 1 0 </texCoords>
+      <texCoords count="8">60.1 60 0.1 60 0.1 0 60.1 0 </texCoords>
       <colors count="3">255 255 255 </colors>
       <texCoordsLightMap count="0">
       </texCoordsLightMap>
