@@ -12,7 +12,7 @@ namespace TGC.Group.Model
     class Scenario : TgcExample
     {
         private TgcScene scene;
-        private TgcMesh car;
+        private Car car;
         private TgcFpsCamera camera;
 
         public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
@@ -26,7 +26,7 @@ namespace TGC.Group.Model
         {
             var loader = new TgcSceneLoader();
             scene = loader.loadSceneFromFile(MediaDir + "adoquines-TgcScene.xml");
-            car = loader.loadSceneFromFile(MediaDir + "Auto\\Auto-TgcScene.xml").Meshes[0];
+            car = new Car();
             camera = new TgcFpsCamera(Input);
             Camara = camera;
         }
@@ -54,7 +54,8 @@ namespace TGC.Group.Model
             }
 
             movement *= 200f * ElapsedTime;
-            car.move(movement);
+
+            car.move(Input, ElapsedTime);
         }
 
         public override void Render()
