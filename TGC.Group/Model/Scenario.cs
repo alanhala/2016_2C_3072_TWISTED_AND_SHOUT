@@ -25,7 +25,7 @@ namespace TGC.Group.Model
         public override void Init()
         {
             var loader = new TgcSceneLoader();
-            scene = loader.loadSceneFromFile(MediaDir + "adoquines-TgcScene.xml");
+            scene = loader.loadSceneFromFile(MediaDir + "city-TgcScene.xml");
             car = new Car();
             camera = new TgcFpsCamera(Input);
             Camara = camera;
