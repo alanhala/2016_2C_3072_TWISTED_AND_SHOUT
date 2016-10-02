@@ -20,6 +20,8 @@ namespace TGC.Group.Model
         private Vector3 position;
         private Matrix translation;
         private TgcMesh mesh;
+        private float angle;
+        private Vector3 direction;
 
         public Car()
         {
@@ -32,11 +34,13 @@ namespace TGC.Group.Model
 
         private void initializeMovement()
         {
-            acceleration = 20;
-            deceleration = -10;
-            brakeAcceleration = -20;
+            acceleration = 300;
+            deceleration = -70;
+            brakeAcceleration = -600;
             translation = Matrix.Identity;
             position = new Vector3(0, 0, 0);
+            direction = new Vector3(0, 0, -1);
+            angle = 0f;
         }
 
         public void move(TgcD3dInput input, float elapsedTime)
@@ -44,15 +48,31 @@ namespace TGC.Group.Model
             if (input.keyDown(Microsoft.DirectX.DirectInput.Key.Up))
             {
                 velocity = velocity + acceleration * elapsedTime;
-            } else if (input.keyDown(Microsoft.DirectX.DirectInput.Key.Down))
+                System.Diagnostics.Debug.WriteLine("up");
+            }
+            if (input.keyDown(Microsoft.DirectX.DirectInput.Key.Down))
             {
                 velocity = velocity + brakeAcceleration * elapsedTime;
-            } else
-            {
-                decelerate(elapsedTime);
+                System.Diagnostics.Debug.WriteLine("down");
             }
-            position.Z -= velocity * elapsedTime;
-            mesh.Transform = Matrix.Translation(position) * Matrix.RotationY(-FastMath.PI_HALF);
+            if (input.keyDown(Microsoft.DirectX.DirectInput.Key.Left))
+            {
+                angle -= 2f * elapsedTime;
+                System.Diagnostics.Debug.WriteLine("left");
+            }
+            if (input.keyDown(Microsoft.DirectX.DirectInput.Key.Right))
+            {
+                angle += 2f * elapsedTime;
+                System.Diagnostics.Debug.WriteLine("right");
+            }
+            //else
+           // {
+             //   decelerate(elapsedTime);
+            //}
+            Vector4 asd = Vector3.Transform(direction, Matrix.RotationY(angle));
+            position.Z += asd.Z * velocity * elapsedTime;
+            position.X += asd.X * velocity * elapsedTime;
+            mesh.Transform = Matrix.RotationY(angle) * Matrix.Translation(position);
         }
 
         private void decelerate(float elapsedTime)
