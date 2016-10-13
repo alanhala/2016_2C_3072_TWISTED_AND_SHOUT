@@ -11,7 +11,7 @@ using TGC.Core.Utils;
 
 namespace TGC.Group.Model
 {
-    class Car
+    public class Car
     {
         private float velocity;
         private float acceleration;
@@ -94,6 +94,16 @@ namespace TGC.Group.Model
         public void dispose()
         {
             mesh.dispose();
+        }
+
+        public Vector3 getPosition()
+        {
+            return position;
+        }
+
+        public Vector3 getDirection()
+        {
+            return direction;
         }
     }
 }

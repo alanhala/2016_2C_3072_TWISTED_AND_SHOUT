@@ -13,7 +13,7 @@ namespace TGC.Group.Model
     {
         private TgcScene scene;
         private Car car;
-        private TgcFpsCamera camera;
+        private CarCamera camera;
 
         public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
@@ -27,35 +27,16 @@ namespace TGC.Group.Model
             var loader = new TgcSceneLoader();
             scene = loader.loadSceneFromFile(MediaDir + "city-TgcScene.xml");
             car = new Car();
-            camera = new TgcFpsCamera(Input);
+            camera = new CarCamera(car);
             Camara = camera;
         }
 
         public override void Update()
         {
             PreUpdate();
-            var movement = new Vector3(0, 0, 0);
-
-            if (Input.keyDown(Microsoft.DirectX.DirectInput.Key.Up))
-            {
-                movement.Z = -1;
-            }
-            if (Input.keyDown(Microsoft.DirectX.DirectInput.Key.Down))
-            {
-                movement.Z = 1;
-            }
-            if (Input.keyDown(Microsoft.DirectX.DirectInput.Key.Left))
-            {
-                movement.X = 1;
-            }
-            if (Input.keyDown(Microsoft.DirectX.DirectInput.Key.Right))
-            {
-                movement.X = -1;
-            }
-
-            movement *= 200f * ElapsedTime;
-
+           
             car.move(Input, ElapsedTime);
+            camera.UpdateCamera(car);
         }
 
         public override void Render()
