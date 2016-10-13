@@ -25,8 +25,8 @@ namespace TGC.Group.Model
         {
             Vector3 carPosition = car.getPosition();
             Vector3 carDirection = car.getDirection();
-            carDirection.Normalize();
-            Vector3 cameraPosition = new Vector3(carPosition.X + 0 /*calcular distancia en X segun la direccion del auto*/, 100, carPosition.Z + /*calcular distancia en Z segun la direccion del auto*/);
+            //carDirection.Normalize();
+            Vector3 cameraPosition = new Vector3(carPosition.X + 0 /*calcular distancia en X segun la direccion del auto*/, 100, carPosition.Z + 0/*calcular distancia en Z segun la direccion del auto*/);
             base.SetCamera(cameraPosition, new Vector3(carDirection.X, 100, carDirection.Z));
         }
     }
