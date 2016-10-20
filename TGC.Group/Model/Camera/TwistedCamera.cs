@@ -1,124 +1,89 @@
-﻿using Microsoft.DirectX;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+using Microsoft.DirectX;
+using Microsoft.DirectX.DirectInput;
 using TGC.Core.Camara;
+using TGC.Core.Input;
 
-namespace TGC.Examples.Camara
+namespace TGC.Group.Model.Camera
 {
-    /// <summary>
-    ///     Camara en tercera persona que sigue a un objeto a un determinada distancia.
-    /// </summary>
-    public class TwistedCamera : TgcCamera
+    class TwistedCamera : TgcCamera
     {
-        private Vector3 position;
+        private readonly float DELTA_ROTATION_VELOCITY = 3f;
+        private readonly float MAX_DELTA_ROTATION = 0.5f;
+        private readonly float MIN_DELTA_ROTATION = -0.5f;
 
-        /// <summary>
-        ///     Crear una nueva camara
-        /// </summary>
-        public TwistedCamera()
+        private Car target;
+        private Vector3 offset;
+        private TgcD3dInput input;
+        private float deltaRotation;
+
+        public TwistedCamera(TgcD3dInput input, Car car, float offsetHeight, float offsetForward)
         {
-            resetValues();
+            target = car;
+            offset = new Vector3(0, offsetHeight, offsetForward);
+            this.input = input;
+            deltaRotation = 0f;
         }
-
-        public TwistedCamera(Vector3 target, float offsetHeight, float offsetForward) : this()
-        {
-            Target = target;
-            OffsetHeight = offsetHeight;
-            OffsetForward = offsetForward;
-        }
-
-        public TwistedCamera(Vector3 target, Vector3 targetDisplacement, float offsetHeight, float offsetForward)
-            : this()
-        {
-            Target = target;
-            TargetDisplacement = targetDisplacement;
-            OffsetHeight = offsetHeight;
-            OffsetForward = offsetForward;
-        }
-
-        /// <summary>
-        ///     Desplazamiento en altura de la camara respecto del target
-        /// </summary>
-        public float OffsetHeight { get; set; }
-
-        /// <summary>
-        ///     Desplazamiento hacia adelante o atras de la camara repecto del target.
-        ///     Para que sea hacia atras tiene que ser negativo.
-        /// </summary>
-        public float OffsetForward { get; set; }
-
-        /// <summary>
-        ///     Desplazamiento final que se le hace al target para acomodar la camara en un cierto
-        ///     rincon de la pantalla
-        /// </summary>
-        public Vector3 TargetDisplacement { get; set; }
-
-        /// <summary>
-        ///     Rotacion absoluta en Y de la camara
-        /// </summary>
-        public float RotationY { get; set; }
-
-        /// <summary>
-        ///     Objetivo al cual la camara tiene que apuntar
-        /// </summary>
-        public Vector3 Target { get; set; }
 
         public override void UpdateCamera(float elapsedTime)
         {
-            Vector3 targetCenter;
-            CalculatePositionTarget(out position, out targetCenter);
-            SetCamera(position, targetCenter);
+            SetCamera(getCameraPosition(elapsedTime), target.getPosition());
         }
 
-        /// <summary>
-        ///     Carga los valores default de la camara y limpia todos los cálculos intermedios
-        /// </summary>
-        public void resetValues()
+        private Vector3 getCameraPosition(float elapsedTime)
         {
-            OffsetHeight = 20;
-            OffsetForward = -120;
-            RotationY = 0;
-            TargetDisplacement = Vector3.Empty;
-            Target = Vector3.Empty;
-            position = Vector3.Empty;
+            var matrix = Matrix.Translation(offset) * Matrix.RotationY(getCameraRotationAngle(elapsedTime))
+                         * Matrix.Translation(target.getPosition());
+            return new Vector3(matrix.M41, matrix.M42, matrix.M43);
         }
 
-        /// <summary>
-        ///     Configura los valores iniciales de la cámara
-        /// </summary>
-        /// <param name="target">Objetivo al cual la camara tiene que apuntar</param>
-        /// <param name="offsetHeight">Desplazamiento en altura de la camara respecto del target</param>
-        /// <param name="offsetForward">Desplazamiento hacia adelante o atras de la camara repecto del target.</param>
-        public void setTargetOffsets(Vector3 target, float offsetHeight, float offsetForward)
+        private float getCameraRotationAngle(float elapsedTime)
         {
-            Target = target;
-            OffsetHeight = offsetHeight;
-            OffsetForward = offsetForward;
+            if (input.keyDown(Key.D))
+            {
+                deltaRotation -= DELTA_ROTATION_VELOCITY*elapsedTime;
+            } else if (input.keyDown(Key.A))
+            {
+                deltaRotation += DELTA_ROTATION_VELOCITY*elapsedTime;
+            }
+            else
+            {
+                updateNoInputForRotation(elapsedTime);
+            }
+            checkDeltaRotationLimits();
+            return target.getRotationAngle() + deltaRotation;
         }
 
-        /// <summary>
-        ///     Genera la proxima matriz de view, sin actualizar aun los valores internos
-        /// </summary>
-        /// <param name="pos">Futura posicion de camara generada</param>
-        /// <param name="pos">Futuro centro de camara a generada</param>
-        public void CalculatePositionTarget(out Vector3 pos, out Vector3 targetCenter)
+        private void checkDeltaRotationLimits()
         {
-            //alejarse, luego rotar y lueg ubicar camara en el centro deseado
-            targetCenter = Vector3.Add(Target, TargetDisplacement);
-            var m = Matrix.Translation(0, OffsetHeight, OffsetForward) * Matrix.RotationY(RotationY) *
-                    Matrix.Translation(targetCenter);
-
-            //Extraer la posicion final de la matriz de transformacion
-            pos.X = m.M41;
-            pos.Y = m.M42;
-            pos.Z = m.M43;
+            if (deltaRotation > MAX_DELTA_ROTATION)
+            {
+                deltaRotation =  MAX_DELTA_ROTATION;
+            } else if (deltaRotation < MIN_DELTA_ROTATION)
+            {
+                deltaRotation = MIN_DELTA_ROTATION;
+            }
         }
 
-        /// <summary>
-        ///     Rotar la camara respecto del eje Y
-        /// </summary>
-        /// <param name="angle">Ángulo de rotación en radianes</param>
-        public void rotateY(float angle)
+        private void updateNoInputForRotation(float elapsedTime)
         {
-            RotationY += angle;
+            if (deltaRotation > -0.01f && deltaRotation < 0.01f)
+            {
+                deltaRotation = 0;
+            } else if (deltaRotation > 0)
+            {
+                deltaRotation -= DELTA_ROTATION_VELOCITY*elapsedTime;
+            }
+            else
+            {
+                deltaRotation += DELTA_ROTATION_VELOCITY*elapsedTime;
+            }
         }
     }
 }

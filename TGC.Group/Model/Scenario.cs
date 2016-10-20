@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TGC.Core.Example;
 using TGC.Core.SceneLoader;
-using TGC.Examples.Camara;
+using TGC.Group.Model.Camera;
 
 namespace TGC.Group.Model
 {
@@ -28,7 +28,7 @@ namespace TGC.Group.Model
             var loader = new TgcSceneLoader();
             scene = loader.loadSceneFromFile(MediaDir + "city-TgcScene.xml");
             car = new Car();
-            camera = new TwistedCamera(car.getPosition(), 125f, 250);
+            camera = new TwistedCamera(Input, car, 200f, 300f);
             Camara = camera;
         }
 
@@ -37,9 +37,6 @@ namespace TGC.Group.Model
             PreUpdate();
 
             car.move(Input, ElapsedTime);
-
-            camera.Target = car.getPosition();
-            camera.RotationY = car.getRotationAngle();
         }
 
         public override void Render()
