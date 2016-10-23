@@ -84,11 +84,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Game.settings</DependentUpon>
     </Compile>
-    <Compile Include="Model\Car.cs" />
+    <Compile Include="Model\Camera\TwistedCamera.cs" />
+    <Compile Include="Model\Car\Car.cs" />
+    <Compile Include="Model\Car\CarMovement.cs" />
     <Compile Include="Model\Scenario.cs" />
     <Compile Include="Model\GameModel.cs" />
-    <Compile Include="Model\CarCamera.cs" />
-    <Compile Include="Model\TgcFpsCamera.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form\GameForm.resx">

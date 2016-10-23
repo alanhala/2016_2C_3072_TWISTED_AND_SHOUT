@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TGC.Core.Collision;
 using TGC.Core.Example;
 using TGC.Core.SceneLoader;
+using TGC.Group.Model.Camera;
 
 namespace TGC.Group.Model
 {
@@ -13,7 +15,7 @@ namespace TGC.Group.Model
     {
         private TgcScene scene;
         private Car car;
-        private CarCamera camera;
+        private TwistedCamera camera;
 
         public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
@@ -27,16 +29,35 @@ namespace TGC.Group.Model
             var loader = new TgcSceneLoader();
             scene = loader.loadSceneFromFile(MediaDir + "city-TgcScene.xml");
             car = new Car();
-            camera = new CarCamera(car);
+            camera = new TwistedCamera(Input, car, 200f, 300f);
             Camara = camera;
+
         }
 
         public override void Update()
         {
             PreUpdate();
-           
+            var currentTransform = car.getMesh().Transform;
+            var currentPosition = car.getPosition();
             car.move(Input, ElapsedTime);
-            camera.UpdateCamera(car);
+            var collisionFound = false;
+
+            foreach (var mesh in scene.Meshes)
+            {
+                var mainMeshBoundingBox = car.getMesh().BoundingBox;
+                var sceneMeshBoundingBox = mesh.BoundingBox;
+
+                //TODO: No es el algoritmo definitivo
+                var collisionResult = TgcCollisionUtils.classifyBoxBox(mainMeshBoundingBox, sceneMeshBoundingBox);
+
+                if (collisionResult != TgcCollisionUtils.BoxBoxResult.Afuera)
+                {
+                    collisionFound = true;
+                    break;
+                }
+            }
+
+            car.handleColission(collisionFound, currentTransform, currentPosition);
         }
 
         public override void Render()
@@ -44,6 +65,15 @@ namespace TGC.Group.Model
             PreRender();
             car.render();
             scene.renderAll();
+
+            //En este ejemplo a modo de debug vamos a dibujar los BoundingBox de todos los objetos.
+            //Asi puede verse como se efectúa el testeo de colisiones.
+            car.getMesh().BoundingBox.render();
+            foreach (var mesh in scene.Meshes)
+            {
+                mesh.BoundingBox.render();
+            }
+
             PostRender();
         }
 
