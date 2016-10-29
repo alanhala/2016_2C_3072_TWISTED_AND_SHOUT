@@ -40,39 +40,25 @@ namespace TGC.Group.Model
             var currentTransform = car.getMesh().Transform;
             var currentPosition = car.getPosition();
             car.move(Input, ElapsedTime);
-            var collisionFound = false;
+
+            var collisionResult = false;
 
             foreach (var mesh in scene.Meshes)
             {
-                var mainMeshBoundingBox = car.getMesh().BoundingBox;
                 var sceneMeshBoundingBox = mesh.BoundingBox;
 
-                //TODO: No es el algoritmo definitivo
-                var collisionResult = TgcCollisionUtils.classifyBoxBox(mainMeshBoundingBox, sceneMeshBoundingBox);
+                collisionResult = TgcCollisionUtils.testObbAABB(car.boundingBox, sceneMeshBoundingBox);
 
-                if (collisionResult != TgcCollisionUtils.BoxBoxResult.Afuera)
-                {
-                    collisionFound = true;
-                    break;
-                }
+                if (collisionResult) break;
             }
-
-            car.handleColission(collisionFound, currentTransform, currentPosition);
+            car.handleColission(collisionResult, currentTransform, currentPosition);
         }
 
         public override void Render()
         {
             PreRender();
             car.render();
-            scene.renderAll();
-
-            //En este ejemplo a modo de debug vamos a dibujar los BoundingBox de todos los objetos.
-            //Asi puede verse como se efectúa el testeo de colisiones.
-            car.getMesh().BoundingBox.render();
-            foreach (var mesh in scene.Meshes)
-            {
-                mesh.BoundingBox.render();
-            }
+            scene.renderAll(true);
 
             PostRender();
         }

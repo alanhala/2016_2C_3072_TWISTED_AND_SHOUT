@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TGC.Core.BoundingVolumes;
 using TGC.Core.Example;
 using TGC.Core.Input;
 using TGC.Core.SceneLoader;
@@ -17,6 +18,8 @@ namespace TGC.Group.Model
         private CarMovement carMovement;
         private List<Wheel> backWheels;
         private List<Wheel> frontWheels;
+        private Vector3 position = new Vector3(0, 20, 0);
+        public TgcBoundingOrientedBox boundingBox;
 
         public Car()
         {
@@ -25,8 +28,8 @@ namespace TGC.Group.Model
                 + "Auto\\Auto-TgcScene.xml").Meshes[0];
             mesh.AutoTransformEnable = false;
             carMovement = new CarMovement(new Vector3(0, 0, 1), 300, -70, -600);
-            mesh.move(0, 20, 0);
-
+            boundingBox = TgcBoundingOrientedBox.computeFromPoints(mesh.getVertexPositions());
+            boundingBox.move(position);
             createWheels(loader);
         }
 
@@ -50,19 +53,27 @@ namespace TGC.Group.Model
 
         public void move(TgcD3dInput input, float elapsedTime)
         {
-            Matrix matrix = carMovement.move(input, elapsedTime);
-            mesh.Transform = matrix;
-            mesh.BoundingBox.transform(matrix);
-
+            var previousAngle = carMovement.getRotationAngle();
+            carMovement.updateCarPosition(input, elapsedTime);
+            position += carMovement.getRelativePosition();
+            var carMatrix = Matrix.RotationY(carMovement.getRotationAngle()) * Matrix.Translation(position);
+            mesh.Transform = carMatrix;
             foreach (Wheel wheel in backWheels)
             {
-                wheel.move(matrix);
+                wheel.move(carMatrix);
             }
 
             foreach (Wheel wheel in frontWheels)
             {
-                wheel.move(matrix);
+                wheel.move(carMatrix);
             }
+            updateBoundingBox(previousAngle);
+        }
+
+        private void updateBoundingBox(float previousAngle)
+        {
+            boundingBox.move(carMovement.getRelativePosition());
+            boundingBox.rotate(new Vector3(0, carMovement.getRotationAngle() - previousAngle, 0));
         }
 
         public void render()
@@ -70,13 +81,14 @@ namespace TGC.Group.Model
             mesh.render();
             foreach (var wheel in frontWheels)
             {
-                wheel.Mesh.render();
+                wheel.mesh.render();
             }
 
             foreach (var wheel in backWheels)
             {
-                wheel.Mesh.render();
+                wheel.mesh.render();
             }
+            boundingBox.render();
         }
 
         public void dispose()
@@ -86,12 +98,12 @@ namespace TGC.Group.Model
 
         public Vector3 getPosition()
         {
-            return carMovement.getPosition();
+            return position;
         }
 
         public void setPosition(Vector3 newPosition)
         {
-            carMovement.setPosition(newPosition);
+            position = newPosition;
             mesh.Position = newPosition;
         }
         internal float getRotationAngle()

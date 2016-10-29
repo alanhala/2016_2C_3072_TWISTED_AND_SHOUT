@@ -11,8 +11,8 @@ namespace TGC.Group.Model
 {
     class Wheel
     {
-        private TgcMesh mesh;
         private Matrix initialPositionMatrix;
+        public TgcMesh mesh { get; set; }
 
         public Wheel(Boolean isFrontWheel, Boolean isRightWheel)
         {
@@ -21,17 +21,15 @@ namespace TGC.Group.Model
             var zPosition = isFrontWheel ? 33 : -32;
             initialPositionMatrix = Matrix.RotationY((float)FastMath.PI_HALF)
                 * Matrix.Translation(new Vector3(xPosition, 0, zPosition));
-            Mesh = loader.loadSceneFromFile(Game.Default.MediaDirectory + "Rueda\\Rueda-TgcScene.xml").Meshes[0];
-            Mesh.AutoTransformEnable = false;
-            Mesh.Transform = initialPositionMatrix;
+            mesh = loader.loadSceneFromFile(Game.Default.MediaDirectory + "Rueda\\Rueda-TgcScene.xml").Meshes[0];
+            mesh.AutoTransformEnable = false;
+            mesh.Transform = initialPositionMatrix;
            
         }
 
-        public TgcMesh Mesh { get; set; }
-
         public void move(Matrix movementMatrix)
         {
-            Mesh.Transform = initialPositionMatrix * movementMatrix;
+            mesh.Transform = initialPositionMatrix * movementMatrix;
         }
 
     }

@@ -11,8 +11,8 @@ namespace TGC.Group.Model
         private float deceleration;
         private float rotationAngle = (float)Math.PI;
         private float velocity = 0f;
+        private Vector3 relativePosition = new Vector3(0, 0, 0);
         private Vector3 initialDirection;
-        private Vector3 position = new Vector3(0, 20, 0);
         private Vector4 currentDirection = new Vector4();
 
         public CarMovement(Vector3 carDirection, float acceleration, float deceleration,
@@ -24,25 +24,24 @@ namespace TGC.Group.Model
             brakeDeceleration = brakeDecelartion;
         }
 
+        public Vector3 getRelativePosition()
+        {
+            return relativePosition;
+        }
+
         internal Vector3 getDirection()
         {
             return new Vector3(currentDirection.X, currentDirection.Y, currentDirection.Z);
         }
 
-        public Vector3 getPosition()
-        {
-            return position;
-        }
-
-        public Matrix move(TgcD3dInput input, float elapsedTime)
+        public void updateCarPosition(TgcD3dInput input, float elapsedTime)
         {
             updateVelocity(input, elapsedTime);
             turnCar(input, elapsedTime);
             currentDirection = Vector3.Transform(initialDirection, Matrix.RotationY((float)Math.PI + rotationAngle));
-            position.X += currentDirection.X * velocity * elapsedTime;
-            position.Y += currentDirection.Y * velocity * elapsedTime;
-            position.Z += currentDirection.Z * velocity * elapsedTime;
-            return Matrix.RotationY(rotationAngle) * Matrix.Translation(position);
+            relativePosition.X = currentDirection.X * velocity * elapsedTime;
+            relativePosition.Y = currentDirection.Y * velocity * elapsedTime;
+            relativePosition.Z = currentDirection.Z * velocity * elapsedTime;
         }
 
         internal float getRotationAngle()
@@ -115,11 +114,6 @@ namespace TGC.Group.Model
         private bool movesForward(TgcD3dInput input)
         {
             return input.keyDown(Microsoft.DirectX.DirectInput.Key.Up);
-        }
-
-        public void setPosition(Vector3 newPosition)
-        {
-            position = newPosition;
         }
 
         public void setVelocity(float newVelocity)
