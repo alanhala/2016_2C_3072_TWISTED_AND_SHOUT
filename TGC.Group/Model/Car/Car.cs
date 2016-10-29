@@ -15,6 +15,8 @@ namespace TGC.Group.Model
     {
         private TgcMesh mesh;
         private CarMovement carMovement;
+        private List<Wheel> backWheels;
+        private List<Wheel> frontWheels;
 
         public Car()
         {
@@ -24,7 +26,21 @@ namespace TGC.Group.Model
             mesh.AutoTransformEnable = false;
             carMovement = new CarMovement(new Vector3(0, 0, 1), 300, -70, -600);
             mesh.move(0, 20, 0);
-            
+
+            createWheels(loader);
+        }
+
+        private void createWheels(TgcSceneLoader loader)
+        {
+
+            backWheels = new List<Wheel>();
+            frontWheels = new List<Wheel>();
+
+            backWheels.Add(new Wheel(false, true));
+            backWheels.Add(new Wheel(false, false));
+
+            frontWheels.Add(new Wheel(true, true));
+            frontWheels.Add(new Wheel(true, false));
         }
 
         internal Vector3 getDirection()
@@ -37,11 +53,30 @@ namespace TGC.Group.Model
             Matrix matrix = carMovement.move(input, elapsedTime);
             mesh.Transform = matrix;
             mesh.BoundingBox.transform(matrix);
+
+            foreach (Wheel wheel in backWheels)
+            {
+                wheel.move(matrix);
+            }
+
+            foreach (Wheel wheel in frontWheels)
+            {
+                wheel.move(matrix);
+            }
         }
 
         public void render()
         {
             mesh.render();
+            foreach (var wheel in frontWheels)
+            {
+                wheel.Mesh.render();
+            }
+
+            foreach (var wheel in backWheels)
+            {
+                wheel.Mesh.render();
+            }
         }
 
         public void dispose()
