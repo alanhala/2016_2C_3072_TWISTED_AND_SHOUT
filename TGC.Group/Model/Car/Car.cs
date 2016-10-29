@@ -60,12 +60,12 @@ namespace TGC.Group.Model
             mesh.Transform = carMatrix;
             foreach (Wheel wheel in backWheels)
             {
-                wheel.move(carMatrix);
+                wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, false);
             }
 
             foreach (Wheel wheel in frontWheels)
             {
-                wheel.move(carMatrix);
+                wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, true);
             }
             updateBoundingBox(previousAngle);
         }

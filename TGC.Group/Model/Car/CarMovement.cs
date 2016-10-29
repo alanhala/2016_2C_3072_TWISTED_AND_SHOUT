@@ -120,5 +120,10 @@ namespace TGC.Group.Model
         {
             velocity = newVelocity;
         }
+
+        public float getVelocity()
+        {
+            return velocity;
+        }
     }
 }
