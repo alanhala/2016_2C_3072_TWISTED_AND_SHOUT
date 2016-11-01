@@ -46,6 +46,11 @@ namespace TGC.Group.Model
                 initialPositionMatrix * movementMatrix;
         }
 
+        public void move(Matrix movementMatrix, float velocity)
+        {
+            move(null, movementMatrix, velocity, 0, false);
+        }
+
         private float getWheelRotation(TgcD3dInput input, float elapsedTime)
         {
             if (input.keyDown(Key.Left))

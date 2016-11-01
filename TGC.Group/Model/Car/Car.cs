@@ -130,6 +130,17 @@ namespace TGC.Group.Model
                 mesh.BoundingBox.transform(previousTransformMatrix);
                 setPosition(previousPosition);
                 resetVelocity();
+
+                foreach (Wheel wheel in backWheels)
+                    {
+                    wheel.move(previousTransformMatrix, carMovement.getVelocity());
+                    }
+
+                foreach (Wheel wheel in frontWheels)
+                    {
+                    wheel.move(previousTransformMatrix, carMovement.getVelocity());
+                    }
+
             }
         }
 
