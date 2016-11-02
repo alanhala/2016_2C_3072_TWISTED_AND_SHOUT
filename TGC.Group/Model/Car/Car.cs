@@ -20,8 +20,9 @@ namespace TGC.Group.Model
         private List<Wheel> frontWheels;
         private Vector3 position = new Vector3(0, 20, 0);
         public TgcBoundingOrientedBox boundingBox;
+        private CarCollisionDetection carCollisionDetection;
 
-        public Car()
+        public Car(TgcScene scene)
         {
             var loader = new TgcSceneLoader();
             mesh = loader.loadSceneFromFile(Game.Default.MediaDirectory
@@ -31,6 +32,7 @@ namespace TGC.Group.Model
             boundingBox = TgcBoundingOrientedBox.computeFromPoints(mesh.getVertexPositions());
             boundingBox.move(position);
             createWheels(loader);
+            carCollisionDetection = new CarCollisionDetection(this, scene);
         }
 
         private void createWheels(TgcSceneLoader loader)
@@ -53,27 +55,15 @@ namespace TGC.Group.Model
 
         public void move(TgcD3dInput input, float elapsedTime)
         {
-            var previousAngle = carMovement.getRotationAngle();
             carMovement.updateCarPosition(input, elapsedTime);
-            position += carMovement.getRelativePosition();
-            var carMatrix = Matrix.RotationY(carMovement.getRotationAngle()) * Matrix.Translation(position);
-            mesh.Transform = carMatrix;
-            foreach (Wheel wheel in backWheels)
-            {
-                wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, false);
-            }
-
-            foreach (Wheel wheel in frontWheels)
-            {
-                wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, true);
-            }
-            updateBoundingBox(previousAngle);
+            updateBoundingBox();
+            handleColission(input, elapsedTime);
         }
 
-        private void updateBoundingBox(float previousAngle)
+        private void updateBoundingBox()
         {
-            boundingBox.move(carMovement.getRelativePosition());
-            boundingBox.rotate(new Vector3(0, carMovement.getRotationAngle() - previousAngle, 0));
+            boundingBox.move(carMovement.getPositionDiff());
+            boundingBox.rotate(new Vector3(0, carMovement.getRotationAngleDiff(), 0));
         }
 
         public void render()
@@ -98,7 +88,7 @@ namespace TGC.Group.Model
 
         public Vector3 getPosition()
         {
-            return position;
+            return position + carMovement.getRelativePosition();
         }
 
         public void setPosition(Vector3 newPosition)
@@ -121,26 +111,28 @@ namespace TGC.Group.Model
             carMovement.setVelocity(0f);
         }
 
-        public void handleColission(bool hasColissioned, Matrix previousTransformMatrix, Vector3 previousPosition)
+        public void handleColission(TgcD3dInput input, float elapsedTime)
         {
-            //TODO: la colisión debe tener una reacción
-            if (hasColissioned)
+            if (carCollisionDetection.hasCollisioned())
             {
-                mesh.Transform = previousTransformMatrix;
-                mesh.BoundingBox.transform(previousTransformMatrix);
-                setPosition(previousPosition);
-                resetVelocity();
-
+                boundingBox.move(-carMovement.getPositionDiff());
+                boundingBox.rotate(new Vector3(0, -carMovement.getRotationAngleDiff(), 0));
+                carMovement.setVelocity(0);
+                carMovement.rollbackMovement();
+            }
+            else
+            {
+                var carMatrix = Matrix.RotationY(carMovement.getRotationAngle()) * Matrix.Translation(getPosition());
+                mesh.Transform = carMatrix;
                 foreach (Wheel wheel in backWheels)
-                    {
-                    wheel.move(previousTransformMatrix, carMovement.getVelocity());
-                    }
-
+                {
+                    wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, false);
+                }
+                
                 foreach (Wheel wheel in frontWheels)
-                    {
-                    wheel.move(previousTransformMatrix, carMovement.getVelocity());
-                    }
-
+                {
+                    wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, true);
+                }
             }
         }
 

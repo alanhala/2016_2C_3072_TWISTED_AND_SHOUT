@@ -28,30 +28,15 @@ namespace TGC.Group.Model
         {
             var loader = new TgcSceneLoader();
             scene = loader.loadSceneFromFile(MediaDir + "city-TgcScene.xml");
-            car = new Car();
+            car = new Car(scene);
             camera = new TwistedCamera(Input, car, 200f, 300f);
             Camara = camera;
-
         }
 
         public override void Update()
         {
             PreUpdate();
-            var currentTransform = car.getMesh().Transform;
-            var currentPosition = car.getPosition();
             car.move(Input, ElapsedTime);
-
-            var collisionResult = false;
-
-            foreach (var mesh in scene.Meshes)
-            {
-                var sceneMeshBoundingBox = mesh.BoundingBox;
-
-                collisionResult = TgcCollisionUtils.testObbAABB(car.boundingBox, sceneMeshBoundingBox);
-
-                if (collisionResult) break;
-            }
-            car.handleColission(collisionResult, currentTransform, currentPosition);
         }
 
         public override void Render()
