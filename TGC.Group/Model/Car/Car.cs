@@ -117,7 +117,10 @@ namespace TGC.Group.Model
             {
                 boundingBox.move(-carMovement.getPositionDiff());
                 boundingBox.rotate(new Vector3(0, -carMovement.getRotationAngleDiff(), 0));
-                carMovement.setVelocity(0);
+                if (carMovement.getVelocity() > 0)
+                    carMovement.setVelocity(-100);
+                else
+                    carMovement.setVelocity(100);
                 carMovement.rollbackMovement();
             }
             else
