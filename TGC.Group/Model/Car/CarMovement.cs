@@ -93,11 +93,11 @@ namespace TGC.Group.Model
         {
             if (velocity > 20f || velocity < -20f)
             {
-                if (turnsLeft(input))
+                if ((turnsLeft(input) && velocity > 0) || (turnsRight(input) && velocity < 0))
                 {
                     rotationAngle -= 2f * elapsedTime;
                 }
-                else if (turnsRight(input))
+                else if ((turnsRight(input) && velocity > 0) || (turnsLeft(input) && velocity < 0))
                 {
                     rotationAngle += 2f * elapsedTime;
                 }
