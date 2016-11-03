@@ -1,14 +1,8 @@
-﻿using Microsoft.DirectX;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TGC.Core.Collision;
+﻿using System.Drawing;
 using TGC.Core.Example;
 using TGC.Core.SceneLoader;
 using TGC.Group.Model.Camera;
+using TGC.Group.Model.Particles;
 
 namespace TGC.Group.Model
 {
@@ -18,6 +12,7 @@ namespace TGC.Group.Model
         private Car car;
         private TwistedCamera camera;
         private Velocimetro velocimetro;
+        private SmokeParticle emitter;
 
         public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
@@ -34,21 +29,24 @@ namespace TGC.Group.Model
             camera = new TwistedCamera(Input, car, 100f, 250f);
             Camara = camera;
             velocimetro = new Velocimetro();
+            emitter = new SmokeParticle(car);
         }
 
         public override void Update()
         {
             PreUpdate();
             car.move(Input, ElapsedTime);
+            emitter.update();
         }
 
         public override void Render()
         {
             PreRender();
             car.render();
-            scene.renderAll(true);
+            scene.renderAll();
             velocimetro.render(DrawText, car.getVelocity());
             DrawText.drawText("Energy: " + car.getEnergy(), 800, 600, Color.Yellow);
+            emitter.render(ElapsedTime);
             PostRender();
         }
 

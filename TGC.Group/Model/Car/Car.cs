@@ -5,10 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TGC.Core.BoundingVolumes;
+using TGC.Core.Direct3D;
 using TGC.Core.Example;
 using TGC.Core.Input;
+using TGC.Core.Particle;
 using TGC.Core.SceneLoader;
 using TGC.Core.Utils;
+using TGC.Group.Model.Particles;
 
 namespace TGC.Group.Model
 {
@@ -21,6 +24,8 @@ namespace TGC.Group.Model
         private Vector3 position = new Vector3(0, 20, 0);
         public TgcBoundingOrientedBox boundingBox;
         private CarCollisionDetection carCollisionDetection;
+        private double energy;
+        private float elapsedTime;
 
         public Car(TgcScene scene)
         {
@@ -33,6 +38,7 @@ namespace TGC.Group.Model
             boundingBox.move(position);
             createWheels(loader);
             carCollisionDetection = new CarCollisionDetection(this, scene);
+            energy = 100;
         }
 
         private void createWheels(TgcSceneLoader loader)
@@ -55,9 +61,10 @@ namespace TGC.Group.Model
 
         public void move(TgcD3dInput input, float elapsedTime)
         {
+            this.elapsedTime = elapsedTime;
             carMovement.updateCarPosition(input, elapsedTime);
             updateBoundingBox();
-            handleColission(input, elapsedTime);
+            handleColission(input);
         }
 
         private void updateBoundingBox()
@@ -78,7 +85,6 @@ namespace TGC.Group.Model
             {
                 wheel.mesh.render();
             }
-            boundingBox.render();
         }
 
         public void dispose()
@@ -111,12 +117,13 @@ namespace TGC.Group.Model
             carMovement.setVelocity(0f);
         }
 
-        public void handleColission(TgcD3dInput input, float elapsedTime)
+        public void handleColission(TgcD3dInput input)
         {
             if (carCollisionDetection.hasCollisioned())
             {
                 boundingBox.move(-carMovement.getPositionDiff());
                 boundingBox.rotate(new Vector3(0, -carMovement.getRotationAngleDiff(), 0));
+                energy -= (Math.Abs(Math.Round(carMovement.getVelocity() / 15)));
                 if (carMovement.getVelocity() > 0)
                     carMovement.setVelocity(-100);
                 else
@@ -139,5 +146,14 @@ namespace TGC.Group.Model
             }
         }
 
+        public float getVelocity()
+        {
+            return carMovement.getVelocity();
+        }
+
+        public double getEnergy()
+        {
+            return energy;
+        }
     }
 }

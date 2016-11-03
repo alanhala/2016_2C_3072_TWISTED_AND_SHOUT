@@ -2,6 +2,7 @@
 using Microsoft.DirectX;
 using Microsoft.DirectX.DirectInput;
 using TGC.Core.Input;
+using TGC.Core.Particle;
 
 namespace TGC.Group.Model
 {
