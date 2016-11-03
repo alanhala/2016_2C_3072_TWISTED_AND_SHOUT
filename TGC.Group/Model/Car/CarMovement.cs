@@ -7,6 +7,8 @@ namespace TGC.Group.Model
 {
     public class CarMovement
     {
+        private readonly float MAX_VELOCITY = 900f;
+        private readonly float MAX_REVERSE_VELOCTIY = -500;
         private float acceleration;
         private float brakeDeceleration;
         private float deceleration;
@@ -95,11 +97,11 @@ namespace TGC.Group.Model
             {
                 if ((turnsLeft(input) && velocity > 0) || (turnsRight(input) && velocity < 0))
                 {
-                    rotationAngle -= 2f * elapsedTime;
+                    rotationAngle -= 1.5f * elapsedTime;
                 }
                 else if ((turnsRight(input) && velocity > 0) || (turnsLeft(input) && velocity < 0))
                 {
-                    rotationAngle += 2f * elapsedTime;
+                    rotationAngle += 1.5f * elapsedTime;
                 }
             }
         }
@@ -118,11 +120,11 @@ namespace TGC.Group.Model
         {
             if (movesForward(input))
             {
-                velocity = velocity + acceleration * elapsedTime;
+                velocity = Math.Min(velocity + acceleration * elapsedTime, MAX_VELOCITY);
             }
             else if (movesBackwards(input))
             {
-                velocity = velocity + brakeDeceleration * elapsedTime;
+                velocity = Math.Max(velocity + brakeDeceleration * elapsedTime, MAX_REVERSE_VELOCTIY);
             }
             else
             {
