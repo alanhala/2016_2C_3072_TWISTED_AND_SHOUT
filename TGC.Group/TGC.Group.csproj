@@ -90,6 +90,7 @@
     <Compile Include="Model\Car\CarMovement.cs" />
     <Compile Include="Model\Scenario.cs" />
     <Compile Include="Model\GameModel.cs" />
+    <Compile Include="Model\Velocimetro.cs" />
     <Compile Include="Model\Wheel\Wheel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

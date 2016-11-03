@@ -16,6 +16,7 @@ namespace TGC.Group.Model
         private TgcScene scene;
         private Car car;
         private TwistedCamera camera;
+        private Velocimetro velocimetro;
 
         public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
@@ -31,6 +32,7 @@ namespace TGC.Group.Model
             car = new Car(scene);
             camera = new TwistedCamera(Input, car, 200f, 300f);
             Camara = camera;
+            velocimetro = new Velocimetro();
         }
 
         public override void Update()
@@ -44,7 +46,7 @@ namespace TGC.Group.Model
             PreRender();
             car.render();
             scene.renderAll(true);
-
+            velocimetro.render(DrawText, car.getVelocity());
             PostRender();
         }
 
