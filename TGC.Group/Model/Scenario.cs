@@ -1,6 +1,7 @@
 ﻿using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,6 +48,7 @@ namespace TGC.Group.Model
             car.render();
             scene.renderAll(true);
             velocimetro.render(DrawText, car.getVelocity());
+            DrawText.drawText("Energy: " + car.getEnergy(), 800, 600, Color.Yellow);
             PostRender();
         }
 
