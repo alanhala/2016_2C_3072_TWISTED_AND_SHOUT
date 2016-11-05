@@ -8,7 +8,10 @@ using System.Timers;
 using Microsoft.DirectX;
 using Microsoft.DirectX.DirectInput;
 using TGC.Core.Camara;
+using TGC.Core.Collision;
 using TGC.Core.Input;
+using TGC.Core.SceneLoader;
+using TGC.Core.Utils;
 
 namespace TGC.Group.Model.Camera
 {
@@ -19,25 +22,54 @@ namespace TGC.Group.Model.Camera
         private readonly float MIN_DELTA_ROTATION = -0.5f;
 
         private Car target;
-        private Vector3 offset;
         private TgcD3dInput input;
         private float deltaRotation;
+        private float offsetHeight;
+        private float offsetForward;
+        private float currentOffsetHeight;
+        private float currentOffsetForward;
+        private TgcScene scene;
 
-        public TwistedCamera(TgcD3dInput input, Car car, float offsetHeight, float offsetForward)
+        public TwistedCamera(TgcD3dInput input, Car car, TgcScene scene, float offsetHeight, float offsetForward)
         {
             target = car;
-            offset = new Vector3(0, offsetHeight, offsetForward);
+            this.offsetHeight = offsetHeight;
+            this.offsetForward = offsetForward;
             this.input = input;
+            this.scene = scene;
             deltaRotation = 0f;
         }
 
         public override void UpdateCamera(float elapsedTime)
         {
+            currentOffsetForward = offsetForward;
+            var position = getCameraPosition(elapsedTime);
+            //Detectar colisiones entre el segmento de recta camara-personaje y todos los objetos del escenario
+            Vector3 intersectionPoint;
+            var minDistSq = FastMath.Pow2(offsetForward);
+            foreach (var obstaculo in scene.Meshes)
+            {
+                //Hay colision del segmento camara-personaje y el objeto
+                if (TgcCollisionUtils.intersectSegmentAABB(target.getPosition(), position, 
+                    obstaculo.BoundingBox, out intersectionPoint))
+                {
+                    //Si hay colision, guardar la que tenga menor distancia
+                    var distSq = Vector3.Subtract(intersectionPoint, target.getPosition()).LengthSq();
+                    //Hay dos casos singulares, puede que tengamos mas de una colision hay que quedarse con el menor offset.
+                    //Si no dividimos la distancia por 2 se acerca mucho al target.
+                    minDistSq = FastMath.Min(distSq / 2, minDistSq);
+                }
+            }
+
+            var newOffsetForward = FastMath.Sqrt(minDistSq);
+            currentOffsetForward = newOffsetForward;
+
             SetCamera(getCameraPosition(elapsedTime), target.getPosition());
         }
 
         private Vector3 getCameraPosition(float elapsedTime)
         {
+            var offset = new Vector3(0, offsetHeight, currentOffsetForward);
             var matrix = Matrix.Translation(offset) * Matrix.RotationY(getCameraRotationAngle(elapsedTime))
                          * Matrix.Translation(target.getPosition());
             return new Vector3(matrix.M41, matrix.M42, matrix.M43);
