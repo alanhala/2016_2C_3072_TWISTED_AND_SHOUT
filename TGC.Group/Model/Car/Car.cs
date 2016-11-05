@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TGC.Core.BoundingVolumes;
 using TGC.Core.Direct3D;
 using TGC.Core.Example;
+using TGC.Core.Geometry;
 using TGC.Core.Input;
 using TGC.Core.Particle;
 using TGC.Core.SceneLoader;
@@ -26,6 +27,7 @@ namespace TGC.Group.Model
         private CarCollisionDetection carCollisionDetection;
         private double energy;
         private float elapsedTime;
+        private TgcBox light;
 
         public Car(TgcScene scene)
         {
@@ -37,8 +39,19 @@ namespace TGC.Group.Model
             boundingBox = TgcBoundingOrientedBox.computeFromPoints(mesh.getVertexPositions());
             boundingBox.move(position);
             createWheels(loader);
+            createLight();
             carCollisionDetection = new CarCollisionDetection(this, scene);
             energy = 100;
+
+            
+        }
+
+        private void createLight()
+        {
+            light = TgcBox.fromSize(new Vector3(0, 0, 0));
+            light.AutoTransformEnable = false;
+            light.Transform = Matrix.Translation(new Vector3(0, 10, 0));
+            light.Enabled = true;
         }
 
         private void createWheels(TgcSceneLoader loader)
@@ -85,6 +98,7 @@ namespace TGC.Group.Model
             {
                 wheel.mesh.render();
             }
+            light.render();
         }
 
         public void dispose()
@@ -134,6 +148,7 @@ namespace TGC.Group.Model
             {
                 var carMatrix = Matrix.RotationY(carMovement.getRotationAngle()) * Matrix.Translation(getPosition());
                 mesh.Transform = carMatrix;
+                light.Transform = Matrix.Translation(new Vector3(0, 10, 0)) * carMatrix;
                 foreach (Wheel wheel in backWheels)
                 {
                     wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, false);
@@ -144,6 +159,11 @@ namespace TGC.Group.Model
                     wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, true);
                 }
             }
+        }
+
+        public TgcBox getLight()
+        {
+            return light;
         }
 
         public float getVelocity()
