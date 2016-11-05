@@ -12,6 +12,7 @@ namespace TGC.Group.Model.Particles
     class SmokeParticle
     {
         private ParticleEmitter emitter;
+        private Vector3 position;
         private Car car;
 
         public SmokeParticle(Car car)
@@ -39,7 +40,7 @@ namespace TGC.Group.Model.Particles
 
         public void update()
         {
-            if (car.getVelocity() > 0)
+            if (car.getVelocity() >= 0)
             {
                 emitter.Enabled = true;
             }
@@ -47,7 +48,9 @@ namespace TGC.Group.Model.Particles
             {
                 emitter.Enabled = false;
             }
-            emitter.Position = car.getPosition();
+            var matrix = Matrix.Translation(new Vector3(10, 2, 32)) * Matrix.RotationY(car.getRotationAngle())
+                         * Matrix.Translation(car.getPosition());
+            emitter.Position = new Vector3(matrix.M41, matrix.M42, matrix.M43);
         }
     }
 }
