@@ -26,7 +26,7 @@ namespace TGC.Group.Model
             var loader = new TgcSceneLoader();
             scene = loader.loadSceneFromFile(MediaDir + "city-TgcScene.xml");
             car = new Car(scene);
-            camera = new TwistedCamera(Input, car, 100f, 250f);
+            camera = new TwistedCamera(Input, car, scene, 100f, 250f);
             Camara = camera;
             velocimetro = new Velocimetro();
             emitter = new SmokeParticle(car);
