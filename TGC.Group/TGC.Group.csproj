@@ -89,6 +89,7 @@
     <Compile Include="Model\CarCollisionDetection.cs" />
     <Compile Include="Model\Car\Car.cs" />
     <Compile Include="Model\Car\CarMovement.cs" />
+    <Compile Include="Model\CarLight.cs" />
     <Compile Include="Model\Particles\SmokeParticle.cs" />
     <Compile Include="Model\Scenario.cs" />
     <Compile Include="Model\GameModel.cs" />

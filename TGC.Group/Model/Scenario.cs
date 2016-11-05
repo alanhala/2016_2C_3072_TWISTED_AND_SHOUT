@@ -45,17 +45,20 @@ namespace TGC.Group.Model
 
         public override void Render()
         {
-            Effect currentShader = TgcShaders.Instance.TgcMeshPointLightShader;
+            Effect currentShader = TgcShaders.Instance.TgcMeshSpotLightShader;
             foreach (var mesh in scene.Meshes)
             {
                 mesh.Effect = currentShader;
                 mesh.Technique = TgcShaders.Instance.getTgcMeshTechnique(mesh.RenderType);
 
-                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(car.getLight().Color));
-                mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(car.getPosition()));
-                mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(Camara.Position));
-                mesh.Effect.SetValue("lightIntensity", 100);
-                mesh.Effect.SetValue("lightAttenuation", 1f);
+                mesh.Effect.SetValue("lightColor", ColorValue.FromColor(Color.White));
+                mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(car.getLightPosition()));
+                mesh.Effect.SetValue("spotLightDir", TgcParserUtils.vector3ToFloat3Array(car.getDirection()));
+                mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(camera.getPosition()));
+                mesh.Effect.SetValue("lightIntensity", 10);
+                mesh.Effect.SetValue("lightAttenuation", 0.1f);
+                mesh.Effect.SetValue("spotLightAngleCos", FastMath.ToRad((float)36));
+                mesh.Effect.SetValue("spotLightExponent", (float)7);
 
                 //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
                 mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor(Color.Black));

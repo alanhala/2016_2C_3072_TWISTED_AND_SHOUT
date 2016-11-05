@@ -27,7 +27,7 @@ namespace TGC.Group.Model
         private CarCollisionDetection carCollisionDetection;
         private double energy;
         private float elapsedTime;
-        private TgcBox light;
+        private CarLight light;
 
         public Car(TgcScene scene)
         {
@@ -39,19 +39,9 @@ namespace TGC.Group.Model
             boundingBox = TgcBoundingOrientedBox.computeFromPoints(mesh.getVertexPositions());
             boundingBox.move(position);
             createWheels(loader);
-            createLight();
             carCollisionDetection = new CarCollisionDetection(this, scene);
             energy = 100;
-
-            
-        }
-
-        private void createLight()
-        {
-            light = TgcBox.fromSize(new Vector3(0, 0, 0));
-            light.AutoTransformEnable = false;
-            light.Transform = Matrix.Translation(new Vector3(0, 10, 0));
-            light.Enabled = true;
+            light = new CarLight(this);
         }
 
         private void createWheels(TgcSceneLoader loader)
@@ -148,7 +138,7 @@ namespace TGC.Group.Model
             {
                 var carMatrix = Matrix.RotationY(carMovement.getRotationAngle()) * Matrix.Translation(getPosition());
                 mesh.Transform = carMatrix;
-                light.Transform = Matrix.Translation(new Vector3(0, 10, 0)) * carMatrix;
+                light.updateLightPosition();
                 foreach (Wheel wheel in backWheels)
                 {
                     wheel.move(input, carMatrix, carMovement.getVelocity(), elapsedTime, false);
@@ -161,11 +151,6 @@ namespace TGC.Group.Model
             }
         }
 
-        public TgcBox getLight()
-        {
-            return light;
-        }
-
         public float getVelocity()
         {
             return carMovement.getVelocity();
@@ -174,6 +159,11 @@ namespace TGC.Group.Model
         public double getEnergy()
         {
             return energy;
+        }
+
+        public Vector3 getLightPosition()
+        {
+            return light.getPosition();
         }
     }
 }

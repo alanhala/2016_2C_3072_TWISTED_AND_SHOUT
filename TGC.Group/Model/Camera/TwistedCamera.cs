@@ -26,9 +26,9 @@ namespace TGC.Group.Model.Camera
         private float deltaRotation;
         private float offsetHeight;
         private float offsetForward;
-        private float currentOffsetHeight;
         private float currentOffsetForward;
         private TgcScene scene;
+        private Vector3 position;
 
         public TwistedCamera(TgcD3dInput input, Car car, TgcScene scene, float offsetHeight, float offsetForward)
         {
@@ -43,7 +43,7 @@ namespace TGC.Group.Model.Camera
         public override void UpdateCamera(float elapsedTime)
         {
             currentOffsetForward = offsetForward;
-            var position = getCameraPosition(elapsedTime);
+            position = getCameraPosition(elapsedTime);
             //Detectar colisiones entre el segmento de recta camara-personaje y todos los objetos del escenario
             Vector3 intersectionPoint;
             var minDistSq = FastMath.Pow2(offsetForward);
@@ -64,7 +64,8 @@ namespace TGC.Group.Model.Camera
             var newOffsetForward = FastMath.Sqrt(minDistSq);
             currentOffsetForward = newOffsetForward;
 
-            SetCamera(getCameraPosition(elapsedTime), target.getPosition());
+            position = getCameraPosition(elapsedTime);
+            SetCamera(position, target.getPosition());
         }
 
         private Vector3 getCameraPosition(float elapsedTime)
@@ -116,6 +117,11 @@ namespace TGC.Group.Model.Camera
             {
                 deltaRotation += DELTA_ROTATION_VELOCITY*elapsedTime;
             }
+        }
+
+        public Vector3 getPosition()
+        {
+            return position;
         }
     }
 }
