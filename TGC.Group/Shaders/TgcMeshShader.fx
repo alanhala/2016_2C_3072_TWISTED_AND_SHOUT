@@ -16,6 +16,8 @@ float4x4 matWorldView; //Matriz World * View
 float4x4 matWorldViewProj; //Matriz World * View * Projection
 float4x4 matInverseTransposeWorld; //Matriz Transpose(Invert(World))
 
+bool carDamaged;
+
 //Textura para DiffuseMap
 texture texDiffuseMap;
 sampler2D diffuseMap = sampler_state
@@ -135,6 +137,7 @@ struct PS_DIFFUSE_MAP
 {
 	float4 Color : COLOR;
 	float2 Texcoord : TEXCOORD0;
+	float4 Position : POSITION0;
 };
 
 //Pixel Shader
@@ -266,7 +269,6 @@ struct PixelShaderInput
     float4 HalfwayVector : TEXCOORD4;
 };
 
-
 VertexShaderOutput vs_main(VertexShaderInput input)
 {
     VertexShaderOutput output;
@@ -303,6 +305,30 @@ float4 ps_ambient_light(PixelShaderInput input) : COLOR0
     return (ambientLight + diffuseLight) * texelColor + specularLight;
 }
 
+PS_DIFFUSE_MAP vs_colision_damage(VertexShaderInput Input)
+{
+	PS_DIFFUSE_MAP Output;
+	if (carDamaged && Input.Position.y > 20) {
+		Input.Position.y = Input.Position.y * 0.9;
+		Input.Position.x = Input.Position.x * 0.8;
+		Input.Position.z = Input.Position.z * 0.8;
+	}
+
+	if (carDamaged && Input.Position.y < 20 && Input.Position.z < 10 && Input.Position.z > -10) {
+		Input.Position.x = Input.Position.x * 0.8;
+	}
+	//Proyectar posicion
+	Output.Position = mul(Input.Position, matWorldViewProj);
+
+	//Propago las coordenadas de textura
+	Output.Texcoord = Input.TexCoord;
+
+	//Propago el color x vertice
+	Output.Color = Input.Color;
+
+	return(Output);
+}
+
 technique Light
 {
     pass Pass_0
@@ -311,3 +337,18 @@ technique Light
         PixelShader = compile ps_3_0 ps_ambient_light();
     }
 }
+
+technique ColissionAndLight
+{
+	pass Pass_0
+	{
+		VertexShader = compile vs_3_0 vs_colision_damage();
+		PixelShader = compile ps_3_0 ps_DiffuseMap();
+	}
+
+	/*pass Pass_1
+	{
+		VertexShader = compile vs_3_0 vs_main();
+		PixelShader = compile ps_3_0 ps_ambient_light();
+	}*/
+};

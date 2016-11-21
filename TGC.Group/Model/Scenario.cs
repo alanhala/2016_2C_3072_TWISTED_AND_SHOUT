@@ -46,6 +46,7 @@ namespace TGC.Group.Model
             PreRender();
             Effect effect = TgcShaders.Instance.TgcMeshShader;
             effect.SetValue("cameraPosition", TgcParserUtils.vector3ToFloat4Array(camera.getPosition()));
+            effect.SetValue("carDamaged", car.isDamaged());
             foreach (var mesh in scene.Meshes)
             {
                 mesh.Effect = effect;
@@ -53,7 +54,7 @@ namespace TGC.Group.Model
                 mesh.render();
             }
             car.getMesh().Effect = effect;
-            car.getMesh().Technique = "Light";
+            car.getMesh().Technique = "ColissionAndLight";
             car.render();
             velocimetro.render(DrawText, car.getVelocity());
             DrawText.drawText("Energy: " + car.getEnergy(), 800, 600, Color.Yellow);

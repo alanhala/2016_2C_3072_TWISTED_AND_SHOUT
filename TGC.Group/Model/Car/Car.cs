@@ -156,5 +156,15 @@ namespace TGC.Group.Model
         {
             return light.getPosition();
         }
+
+        public bool isDamaged()
+        {
+            if(energy < 50)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
