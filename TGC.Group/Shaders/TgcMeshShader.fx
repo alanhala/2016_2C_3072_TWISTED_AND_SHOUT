@@ -270,7 +270,7 @@ struct PixelShaderInput
 VertexShaderOutput vs_main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    
+
     output.Position = mul(input.Position, matWorldViewProj);
     output.Texcoord = input.TexCoord;
     output.WorldPosition = mul(input.Position, matWorld);
@@ -296,52 +296,12 @@ float4 ps_ambient_light(PixelShaderInput input) : COLOR0
     float4 diffuseLight = intensity * LightColor * max(0.0, nDotL);
 
     float4 texelColor = tex2D(diffuseMap, input.Texcoord);
-    
+
     float4 specularLight = nDotL <= 0.0 ? float4(0, 0, 0, 0)
      : intensity * LightColor * pow(max(0.0, dot(nNormal, nHalfwayVector)), Shininess);
 
     return (ambientLight + diffuseLight) * texelColor + specularLight;
 }
-
-float4 ps_car_lights(PixelShaderInput input) : COLOR0
-{
-    //Normalizar vectores
-    float3 nNormal = normalize(input.WorldNormal);
-    float3 nLight = normalize(input.LightVec);
-    float3 nHalfwayVector = normalize(input.HalfwayVector);
-
-	//Calcular atenuacion por distancia
-    float distAtten = length(lightPosition.xyz - input.WorldPosition) * lightAttenuation;
-
-	//Calcular atenuacion por Spot Light. Si esta fuera del angulo del cono tiene 0 intensidad.
-    float spotAtten = dot(-spotLightDir, Ln);
-    spotAtten = (spotAtten > spotLightAngleCos)
-					? pow(spotAtten, spotLightExponent)
-					: 0.0;
-
-	//Calcular intensidad de la luz segun la atenuacion por distancia y si esta adentro o fuera del cono de luz
-    float intensity = lightIntensity * spotAtten / distAtten;
-
-	//Componente Ambient
-    float3 ambientLight = intensity * lightColor * materialAmbientColor;
-
-	//Componente Diffuse: N dot L
-    float3 n_dot_l = dot(Nn, Ln);
-    float3 diffuseLight = intensity * lightColor * materialDiffuseColor.rgb * max(0.0, n_dot_l); //Controlamos que no de negativo
-
-	//Componente Specular: (N dot H)^exp
-    float3 n_dot_h = dot(Nn, Hn);
-    float3 specularLight = n_dot_l <= 0.0
-			? float3(0.0, 0.0, 0.0)
-			: (intensity * lightColor * materialSpecularColor * pow(max(0.0, n_dot_h), materialSpecularExp));
-
-	/* Color final: modular (Emissive + Ambient + Diffuse) por el color del mesh, y luego sumar Specular.
-	   El color Alpha sale del diffuse material */
-    float4 finalColor = float4(saturate(materialEmissiveColor + ambientLight + diffuseLight) * input.Color + specularLight, materialDiffuseColor.a);
-
-    return finalColor;
-}
-
 
 technique Light
 {
