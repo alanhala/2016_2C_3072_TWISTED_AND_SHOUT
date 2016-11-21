@@ -1,18 +1,9 @@
 ﻿using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TGC.Core.BoundingVolumes;
-using TGC.Core.Direct3D;
-using TGC.Core.Example;
-using TGC.Core.Geometry;
 using TGC.Core.Input;
-using TGC.Core.Particle;
 using TGC.Core.SceneLoader;
-using TGC.Core.Utils;
-using TGC.Group.Model.Particles;
 
 namespace TGC.Group.Model
 {

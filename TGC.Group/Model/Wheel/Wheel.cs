@@ -20,8 +20,8 @@ namespace TGC.Group.Model
         private Matrix initialPositionMatrix;
         public TgcMesh mesh { get; set; }
 
-        private int xPosition;
-        private int zPosition;
+        private float xPosition;
+        private float zPosition;
         private float angle = 0;
 
         private float deltaRotation = 0f;
@@ -29,7 +29,7 @@ namespace TGC.Group.Model
         public Wheel(Boolean isFrontWheel, Boolean isRightWheel)
         {
             var loader = new TgcSceneLoader();
-            xPosition = isRightWheel ? -24 : 22;
+            xPosition = isRightWheel ? -21.5f : 19;
             zPosition = isFrontWheel ? -32 : 33;
             initialPositionMatrix = Matrix.Translation(new Vector3(xPosition, 7, zPosition));
             mesh = loader.loadSceneFromFile(Game.Default.MediaDirectory + "Rueda\\Rueda-TgcScene.xml").Meshes[0];
