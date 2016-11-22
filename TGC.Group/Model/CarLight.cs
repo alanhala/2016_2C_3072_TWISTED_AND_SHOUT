@@ -24,7 +24,7 @@ namespace TGC.Group.Model
 
         public void updateLightPosition()
         {
-            var matrix = Matrix.Translation(new Vector3(0, 20, -32)) * Matrix.RotationY(car.getRotationAngle())
+            var matrix = Matrix.Translation(new Vector3(0, 20, -40)) * Matrix.RotationY(car.getRotationAngle())
                          * Matrix.Translation(car.getPosition());
             position = new Vector3(matrix.M41, matrix.M42, matrix.M43);
             mesh.Transform = matrix;

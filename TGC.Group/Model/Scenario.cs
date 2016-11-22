@@ -48,6 +48,9 @@ namespace TGC.Group.Model
             PreRender();
             Effect effect = TgcShaders.Instance.TgcMeshShader;
             effect.SetValue("cameraPosition", TgcParserUtils.vector3ToFloat4Array(camera.getPosition()));
+            effect.SetValue("CarLightPosition", TgcParserUtils.vector3ToFloat4Array(car.getLightPosition()));
+            effect.SetValue("SpotLightDir", TgcParserUtils.vector3ToFloat4Array(car.getDirection()));
+            effect.SetValue("SpotLightAngleCos", FastMath.ToRad((float)36));
             effect.SetValue("carDamaged", car.isDamaged());
             foreach (var mesh in scene.Meshes)
             {

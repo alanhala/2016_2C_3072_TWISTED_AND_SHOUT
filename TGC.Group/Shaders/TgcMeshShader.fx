@@ -234,22 +234,41 @@ technique DIFFUSE_MAP_AND_LIGHTMAP
 // ----------------------------------------------------------------------------------------- //
 // -----------------------------------------------------------------------------------------//
 
-float3 LightPosition = float3(1000, 10000, 0);
-float3 LightColor = float3(1, 1, 1);
-float LightIntensity = 500;
-float LightAttenuation = 0.2f;
+float3 AmbientLightPosition = float3(1000, 10000, 0);
+float3 AmbientLightColor = float3(1, 1, 1);
+float AmbientLightIntensity = 500;
+float AmbientLightAttenuation = 0.2f;
+
+float4 CarLightPosition;
+float CarLightAttenuation = 0.1f;
+float CarLightIntensity = 150;
+float3 SpotLightDir;
+float SpotLightAngleCos;
+float SpotLightExponent = 7;
 
 float4 cameraPosition;
-
-float4 carLightPosition;
-float3 spotLightDir;
-float spotLightAngleCos;
 
 float3 materialEmissiveColor = float3(0, 0, 0);
 float3 materialAmbientColor = float3(1, 1, 1);
 float4 materialDiffuseColor = float4(1, 1, 1, 1);
 float3 materialSpecularColor = float3(1, 1, 1);
 float materialSpecularExp = 20;
+
+float3 calculateAmbientLight(float intensity, float3 lightColor)
+{
+    return intensity * lightColor * materialAmbientColor;
+}
+
+float3 calculateDiffuseLight(float intensity, float3 lightColor, float nDotL)
+{
+    return intensity * lightColor * materialDiffuseColor.rgb * max(0.0, nDotL);
+}
+
+float3 calculateSpecularLight(float intensity, float3 ligthColor, float nDotL, float nDotH)
+{
+    return nDotL <= 0.0 ? float3(0.0, 0.0, 0.0) 
+        : (intensity * ligthColor * materialSpecularColor * pow(max(0.0, nDotH), materialSpecularExp));
+}
 
 struct VertexShaderInput
 {
@@ -267,6 +286,8 @@ struct VertexShaderOutput
     float3 WorldNormal : TEXCOORD2;
     float3 LightVec : TEXCOORD3;
     float3 HalfwayVector : TEXCOORD4;
+    float3 CarLigthVec : TEXCOORD5;
+    float3 CarHalfwayVector : TEXCOORD6;
 };
 
 struct PixelShaderInput
@@ -276,6 +297,8 @@ struct PixelShaderInput
     float3 WorldNormal : TEXCOORD2;
     float3 LightVec : TEXCOORD3;
     float3 HalfwayVector : TEXCOORD4;
+    float3 CarLigthVec : TEXCOORD5;
+    float3 CarHalfwayVector : TEXCOORD6;
 };
 
 VertexShaderOutput vs_main(VertexShaderInput input)
@@ -286,36 +309,52 @@ VertexShaderOutput vs_main(VertexShaderInput input)
     output.Texcoord = input.Texcoord;
     output.WorldPosition = mul(input.Position, matWorld);
     output.WorldNormal = mul(input.Normal, matInverseTransposeWorld).xyz;
-    output.LightVec = LightPosition.xyz - output.WorldPosition;
+    output.LightVec = AmbientLightPosition - output.WorldPosition;
+    output.CarLigthVec = CarLightPosition.xyz - output.WorldPosition;
 
     float3 viewVector = cameraPosition.xyz - output.WorldPosition;
     output.HalfwayVector = viewVector + output.LightVec;
+    output.CarHalfwayVector = viewVector + output.CarLigthVec;
 
     return output;
 }
 
 float4 ps_ambient_light(PixelShaderInput input) : COLOR
 {
-    float3 Nn = normalize(input.WorldNormal);
-    float3 Ln = normalize(input.LightVec);
-    float3 Hn = normalize(input.HalfwayVector);
+    float3 nNormal = normalize(input.WorldNormal);
+    float3 nLightVec = normalize(input.LightVec);
+    float3 nCarLigthVec = normalize(input.CarLigthVec);
+    float3 nHalfwayVector = normalize(input.HalfwayVector);
+    float3 nCarHalfwayVector = normalize(input.CarHalfwayVector);
 
-    float distAtten = length(LightPosition - input.WorldPosition) * LightAttenuation;
-    float intensity = LightIntensity / distAtten;
+    float ambientDistAtten = length(AmbientLightPosition - input.WorldPosition) * AmbientLightAttenuation;
+    float ambientIntensity = AmbientLightIntensity / ambientDistAtten;
+
+    float spotAtten = dot(-SpotLightDir, nCarLigthVec);
+    spotAtten = (spotAtten > SpotLightAngleCos) ? pow(spotAtten, SpotLightExponent) : 0.0;
+    float carDistAtten = length(CarLightPosition.xyz - input.WorldPosition) * CarLightAttenuation;
+    float carIntensity = CarLightIntensity * spotAtten / carDistAtten;
 
     float4 texelColor = tex2D(diffuseMap, input.Texcoord);
 
-    float3 ambientLight = intensity * LightColor * materialAmbientColor;
+    float3 ambientLight = calculateAmbientLight(ambientIntensity, AmbientLightColor);
+    float3 carLightAmbientLight = calculateAmbientLight(carIntensity, AmbientLightColor);
 
-    float3 n_dot_l = dot(Nn, Ln);
-    float3 diffuseLight = intensity * LightColor * materialDiffuseColor.rgb * max(0.0, n_dot_l);
+    float ambientNDotL = dot(nNormal, nLightVec);
+    float carNDotL = dot(nNormal, nCarLigthVec);
+    float3 ambientDiffuseLight = calculateDiffuseLight(ambientIntensity, AmbientLightColor, ambientNDotL);
+    float3 carDiffuseLight = calculateDiffuseLight(carIntensity, AmbientLightColor, carNDotL);
 
-    float3 n_dot_h = dot(Nn, Hn);
-    float3 specularLight = n_dot_l <= 0.0
-			? float3(0.0, 0.0, 0.0)
-			: (intensity * LightColor * materialSpecularColor * pow(max(0.0, n_dot_h), materialSpecularExp));
+    float ambientNDotH = dot(nNormal, nHalfwayVector);
+    float carNDotH = dot(nNormal, nCarHalfwayVector);
+    float3 ambientSpecularLight = calculateSpecularLight(ambientIntensity, AmbientLightColor, ambientNDotL, ambientNDotH);
+    float3 carSpecularLight = calculateSpecularLight(carIntensity, AmbientLightColor, carNDotL, carNDotH);
 
-    return float4(saturate(materialEmissiveColor + ambientLight + diffuseLight) * texelColor + specularLight, materialDiffuseColor.a);
+    float3 finalAmbientLight = (ambientLight + carLightAmbientLight) / 2;
+    float3 finalDiffuseLight = (ambientDiffuseLight + carDiffuseLight) / 2;
+    float3 finalSpecularLight = (ambientSpecularLight + carSpecularLight) / 2;
+
+    return float4(saturate(materialEmissiveColor + finalAmbientLight + finalDiffuseLight) * texelColor + finalSpecularLight, materialDiffuseColor.a);
 }
 
 technique Light
@@ -368,7 +407,7 @@ CarVertexShaderOutput vs_car(VertexShaderInput input)
     output.Texcoord = input.Texcoord;
     output.WorldPosition = mul(input.Position, matWorld);
     output.WorldNormal = mul(input.Normal, matInverseTransposeWorld).xyz;
-    output.LightVec = LightPosition.xyz - output.WorldPosition;
+    output.LightVec = AmbientLightPosition.xyz - output.WorldPosition;
 
     float3 viewVector = cameraPosition.xyz - output.WorldPosition;
     output.HalfwayVector = viewVector + output.LightVec;
@@ -382,20 +421,18 @@ float4 ps_car_light(CarPixelShaderInput input) : COLOR
     float3 Ln = normalize(input.LightVec);
     float3 Hn = normalize(input.HalfwayVector);
 
-    float distAtten = length(LightPosition - input.WorldPosition) * LightAttenuation;
-    float intensity = LightIntensity / distAtten;
+    float distAtten = length(AmbientLightPosition - input.WorldPosition) * AmbientLightAttenuation;
+    float intensity = AmbientLightIntensity / distAtten;
 
     float4 texelColor = tex2D(diffuseMap, input.Texcoord);
+    
+    float3 ambientLight = calculateAmbientLight(intensity, AmbientLightColor);
 
-    float3 ambientLight = intensity * LightColor * materialAmbientColor;
+    float n_dot_l = dot(Nn, Ln);
+    float3 diffuseLight = calculateDiffuseLight(intensity, AmbientLightColor, n_dot_l);
 
-    float3 n_dot_l = dot(Nn, Ln);
-    float3 diffuseLight = intensity * LightColor * materialDiffuseColor.rgb * max(0.0, n_dot_l);
-
-    float3 n_dot_h = dot(Nn, Hn);
-    float3 specularLight = n_dot_l <= 0.0
-			? float3(0.0, 0.0, 0.0)
-			: (intensity * LightColor * materialSpecularColor * pow(max(0.0, n_dot_h), materialSpecularExp));
+    float n_dot_h = dot(Nn, Hn);
+    float3 specularLight = calculateSpecularLight(intensity, AmbientLightColor, n_dot_l, n_dot_h);
 
     return float4(saturate(materialEmissiveColor + ambientLight + diffuseLight) * texelColor + specularLight, materialDiffuseColor.a);
 }
