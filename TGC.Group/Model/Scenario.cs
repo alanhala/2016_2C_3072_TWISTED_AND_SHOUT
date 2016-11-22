@@ -40,7 +40,10 @@ namespace TGC.Group.Model
         {
             PreUpdate();
             car.move(Input, ElapsedTime);
-            emitter.update();
+            if (emitter != null) {
+                emitter.update();
+            }
+            
         }
 
         public override void Render()
