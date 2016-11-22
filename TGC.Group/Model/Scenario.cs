@@ -1,5 +1,7 @@
-﻿using Microsoft.DirectX.Direct3D;
+﻿using System;
+using Microsoft.DirectX.Direct3D;
 using System.Drawing;
+using Microsoft.DirectX;
 using TGC.Core.Example;
 using TGC.Core.SceneLoader;
 using TGC.Core.Shaders;

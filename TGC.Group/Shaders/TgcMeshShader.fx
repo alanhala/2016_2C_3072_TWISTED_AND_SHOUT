@@ -235,19 +235,28 @@ technique DIFFUSE_MAP_AND_LIGHTMAP
 // -----------------------------------------------------------------------------------------//
 
 float3 LightPosition = float3(1000, 10000, 0);
-float4 LightColor = float4(1, 1, 1, 1);
-float lightIntensity = 800;
+float3 LightColor = float3(1, 1, 1);
+float LightIntensity = 500;
 float LightAttenuation = 0.2f;
-float Shininess = 5;
 
 float4 cameraPosition;
+
+float4 carLightPosition;
+float3 spotLightDir;
+float spotLightAngleCos;
+
+float3 materialEmissiveColor = float3(0, 0, 0);
+float3 materialAmbientColor = float3(1, 1, 1);
+float4 materialDiffuseColor = float4(1, 1, 1, 1);
+float3 materialSpecularColor = float3(1, 1, 1);
+float materialSpecularExp = 20;
 
 struct VertexShaderInput
 {
     float4 Position : POSITION0;
     float4 Normal : NORMAL0;
     float4 Color : COLOR0;
-    float4 TexCoord : TEXCOORD0;
+    float4 Texcoord : TEXCOORD0;
 };
 
 struct VertexShaderOutput
@@ -266,7 +275,7 @@ struct PixelShaderInput
     float3 WorldPosition : TEXCOORD1;
     float3 WorldNormal : TEXCOORD2;
     float3 LightVec : TEXCOORD3;
-    float4 HalfwayVector : TEXCOORD4;
+    float3 HalfwayVector : TEXCOORD4;
 };
 
 VertexShaderOutput vs_main(VertexShaderInput input)
@@ -274,59 +283,39 @@ VertexShaderOutput vs_main(VertexShaderInput input)
     VertexShaderOutput output;
 
     output.Position = mul(input.Position, matWorldViewProj);
-    output.Texcoord = input.TexCoord;
+    output.Texcoord = input.Texcoord;
     output.WorldPosition = mul(input.Position, matWorld);
-    output.WorldNormal = mul(input.Normal, matInverseTransposeWorld);
-    output.LightVec = LightPosition - output.WorldPosition;
-    output.HalfwayVector = LightPosition + output.LightVec;
+    output.WorldNormal = mul(input.Normal, matInverseTransposeWorld).xyz;
+    output.LightVec = LightPosition.xyz - output.WorldPosition;
+
+    float3 viewVector = cameraPosition.xyz - output.WorldPosition;
+    output.HalfwayVector = viewVector + output.LightVec;
 
     return output;
 }
 
-float4 ps_ambient_light(PixelShaderInput input) : COLOR0
+float4 ps_ambient_light(PixelShaderInput input) : COLOR
 {
-    float3 nNormal = normalize(input.WorldNormal);
-    float3 nLight = normalize(input.LightVec);
-    float3 nHalfwayVector = normalize(input.HalfwayVector);
-    float nDotL = dot(nNormal, nLight);
+    float3 Nn = normalize(input.WorldNormal);
+    float3 Ln = normalize(input.LightVec);
+    float3 Hn = normalize(input.HalfwayVector);
 
-    float distAttenuation = length(LightPosition.xyz - input.WorldPosition) * LightAttenuation;
-    float intensity = lightIntensity / distAttenuation;
-
-    float4 ambientLight = intensity * LightColor;
-
-    float4 diffuseLight = intensity * LightColor * max(0.0, nDotL);
+    float distAtten = length(LightPosition - input.WorldPosition) * LightAttenuation;
+    float intensity = LightIntensity / distAtten;
 
     float4 texelColor = tex2D(diffuseMap, input.Texcoord);
 
-    float4 specularLight = nDotL <= 0.0 ? float4(0, 0, 0, 0)
-     : intensity * LightColor * pow(max(0.0, dot(nNormal, nHalfwayVector)), Shininess);
+    float3 ambientLight = intensity * LightColor * materialAmbientColor;
 
-    return (ambientLight + diffuseLight) * texelColor + specularLight;
-}
+    float3 n_dot_l = dot(Nn, Ln);
+    float3 diffuseLight = intensity * LightColor * materialDiffuseColor.rgb * max(0.0, n_dot_l);
 
-PS_DIFFUSE_MAP vs_colision_damage(VertexShaderInput Input)
-{
-	PS_DIFFUSE_MAP Output;
-	if (carDamaged && Input.Position.y > 20) {
-		Input.Position.y = Input.Position.y * 0.9;
-		Input.Position.x = Input.Position.x * 0.8;
-		Input.Position.z = Input.Position.z * 0.8;
-	}
+    float3 n_dot_h = dot(Nn, Hn);
+    float3 specularLight = n_dot_l <= 0.0
+			? float3(0.0, 0.0, 0.0)
+			: (intensity * LightColor * materialSpecularColor * pow(max(0.0, n_dot_h), materialSpecularExp));
 
-	if (carDamaged && Input.Position.y < 20 && Input.Position.z < 10 && Input.Position.z > -10) {
-		Input.Position.x = Input.Position.x * 0.8;
-	}
-	//Proyectar posicion
-	Output.Position = mul(Input.Position, matWorldViewProj);
-
-	//Propago las coordenadas de textura
-	Output.Texcoord = Input.TexCoord;
-
-	//Propago el color x vertice
-	Output.Color = Input.Color;
-
-	return(Output);
+    return float4(saturate(materialEmissiveColor + ambientLight + diffuseLight) * texelColor + specularLight, materialDiffuseColor.a);
 }
 
 technique Light
@@ -338,17 +327,85 @@ technique Light
     }
 }
 
+// -----------------------------------------------
+
+struct CarVertexShaderOutput
+{
+    float4 Position : POSITION0;
+    float2 Texcoord : TEXCOORD0;
+    float3 WorldPosition : TEXCOORD1;
+    float3 WorldNormal : TEXCOORD2;
+    float3 LightVec : TEXCOORD3;
+    float3 HalfwayVector : TEXCOORD4;
+};
+
+struct CarPixelShaderInput
+{
+    float2 Texcoord : TEXCOORD0;
+    float3 WorldPosition : TEXCOORD1;
+    float3 WorldNormal : TEXCOORD2;
+    float3 LightVec : TEXCOORD3;
+    float3 HalfwayVector : TEXCOORD4;
+};
+
+CarVertexShaderOutput vs_car(VertexShaderInput input)
+{
+    CarVertexShaderOutput output;
+
+    if (carDamaged && input.Position.y > 20)
+    {
+        input.Position.y = input.Position.y * 0.9;
+        input.Position.x = input.Position.x * 0.8;
+        input.Position.z = input.Position.z * 0.8;
+    }
+
+    if (carDamaged && input.Position.y < 20 && input.Position.z < 10 && input.Position.z > -10)
+    {
+        input.Position.x = input.Position.x * 0.8;
+    }
+
+    output.Position = mul(input.Position, matWorldViewProj);
+    output.Texcoord = input.Texcoord;
+    output.WorldPosition = mul(input.Position, matWorld);
+    output.WorldNormal = mul(input.Normal, matInverseTransposeWorld).xyz;
+    output.LightVec = LightPosition.xyz - output.WorldPosition;
+
+    float3 viewVector = cameraPosition.xyz - output.WorldPosition;
+    output.HalfwayVector = viewVector + output.LightVec;
+
+    return output;
+}
+
+float4 ps_car_light(CarPixelShaderInput input) : COLOR
+{
+    float3 Nn = normalize(input.WorldNormal);
+    float3 Ln = normalize(input.LightVec);
+    float3 Hn = normalize(input.HalfwayVector);
+
+    float distAtten = length(LightPosition - input.WorldPosition) * LightAttenuation;
+    float intensity = LightIntensity / distAtten;
+
+    float4 texelColor = tex2D(diffuseMap, input.Texcoord);
+
+    float3 ambientLight = intensity * LightColor * materialAmbientColor;
+
+    float3 n_dot_l = dot(Nn, Ln);
+    float3 diffuseLight = intensity * LightColor * materialDiffuseColor.rgb * max(0.0, n_dot_l);
+
+    float3 n_dot_h = dot(Nn, Hn);
+    float3 specularLight = n_dot_l <= 0.0
+			? float3(0.0, 0.0, 0.0)
+			: (intensity * LightColor * materialSpecularColor * pow(max(0.0, n_dot_h), materialSpecularExp));
+
+    return float4(saturate(materialEmissiveColor + ambientLight + diffuseLight) * texelColor + specularLight, materialDiffuseColor.a);
+}
+
+
 technique ColissionAndLight
 {
-	pass Pass_0
+	pass Pass_1
 	{
-		VertexShader = compile vs_3_0 vs_colision_damage();
-		PixelShader = compile ps_3_0 ps_DiffuseMap();
+		VertexShader = compile vs_3_0 vs_car();
+		PixelShader = compile ps_3_0 ps_car_light();
 	}
-
-	/*pass Pass_1
-	{
-		VertexShader = compile vs_3_0 vs_main();
-		PixelShader = compile ps_3_0 ps_ambient_light();
-	}*/
 };
