@@ -1,6 +1,7 @@
 ﻿using Microsoft.DirectX;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,35 +22,36 @@ namespace TGC.Group.Model.HUD
         {
             energyBorder = new CustomSprite();
             energyBorder.Bitmap = new CustomBitmap(Game.Default.MediaDirectory + "\\energy-border.png", D3DDevice.Instance.Device);
-            //energyBorder.Scaling = new Vector2(0.5f, 0.5f);
+            energyBorder.Scaling = new Vector2(0.5f, 0.5f);
             var textureSize = energyBorder.Bitmap.Size;
-            energyBorder.Position = new Vector2(FastMath.Max(D3DDevice.Instance.Width - textureSize.Width *4, 0),
-                FastMath.Max(D3DDevice.Instance.Height - textureSize.Height * 4, 0));
+            energyBorder.Position = new Vector2(FastMath.Max(D3DDevice.Instance.Width - textureSize.Width * 1.2f, 0),
+                FastMath.Max(D3DDevice.Instance.Height - textureSize.Height * 1.3f, 0));
 
             energyBar = new CustomSprite();
             energyBar.Bitmap = new CustomBitmap(Game.Default.MediaDirectory + "\\energy.png", D3DDevice.Instance.Device);
-            //energyBorder.Scaling = new Vector2(0.5f, 0.5f);
-            textureSize = energyBar.Bitmap.Size;
-            energyBar.Position = new Vector2(FastMath.Max(D3DDevice.Instance.Width - textureSize.Width * 4, 0),
-                FastMath.Max(D3DDevice.Instance.Height - textureSize.Height * 4, 0));
-
-            heart = new CustomSprite();
-            heart.Bitmap = new CustomBitmap(Game.Default.MediaDirectory + "\\heart.png", D3DDevice.Instance.Device);
-            //energyBorder.Scaling = new Vector2(0.5f, 0.5f);
-            textureSize = heart.Bitmap.Size;
-            heart.Position = new Vector2(FastMath.Max(D3DDevice.Instance.Width - textureSize.Width * 4, 0),
-                FastMath.Max(D3DDevice.Instance.Height - textureSize.Height * 4, 0));
+            energyBar.Scaling = new Vector2(0.5f, 0.5f);
+            energyBar.Position = new Vector2(energyBorder.Position.X + 3, energyBorder.Position.Y + 3);
 
             drawer2D = new Drawer2D();
         }
 
-        public void render()
+        public void render(double energy)
         {
 
+            if(energy < 0)
+            {
+                energy = 0;
+            }
+
+            int red = (((int)energy - 100) * 255) / -100;
+            int green = ((int)energy * 255) / 100;
+            energyBar.Scaling = new Vector2( (float)energy / 205f, 0.4f);
+            var color = Color.FromArgb(red, green, (int)0);
+            energyBar.Color = color;
+
             drawer2D.BeginDrawSprite();
-            drawer2D.DrawSprite(energyBar);
             drawer2D.DrawSprite(energyBorder);
-            drawer2D.DrawSprite(heart);
+            drawer2D.DrawSprite(energyBar);
             drawer2D.EndDrawSprite();
         }
     }

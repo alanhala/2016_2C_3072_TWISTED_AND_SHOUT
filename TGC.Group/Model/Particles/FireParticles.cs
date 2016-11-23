@@ -37,7 +37,7 @@ namespace TGC.Group.Model.Particles
 
         public void update()
         {
-            if (car.getEnergy() < 20)
+            if (car.getEnergy() < 40)
             {
                 emitter.Enabled = true;
                 var matrix = Matrix.Translation(new Vector3(0, 20, -40)) * Matrix.RotationY(car.getRotationAngle())

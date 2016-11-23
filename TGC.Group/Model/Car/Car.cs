@@ -118,7 +118,7 @@ namespace TGC.Group.Model
             {
                 boundingBox.move(-carMovement.getPositionDiff());
                 boundingBox.rotate(new Vector3(0, -carMovement.getRotationAngleDiff(), 0));
-                energy -= (Math.Abs(Math.Round(carMovement.getVelocity() / 15)));
+                energy -= (Math.Abs(Math.Round(carMovement.getVelocity() / 40)));
                 if (carMovement.getVelocity() > 0)
                     carMovement.setVelocity(-100);
                 else
@@ -159,7 +159,7 @@ namespace TGC.Group.Model
 
         public bool isDamaged()
         {
-            if(energy < 50)
+            if(energy < 70)
             {
                 return true;
             }

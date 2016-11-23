@@ -52,9 +52,7 @@ namespace TGC.Group.Model
         {
             if (velocityFloat <= 0) velocityFloat = 0;
             needleSprite.Rotation = FastMath.ToRad(60 + velocityFloat / 4f);
-
-            needleSprite.Scaling = new Vector2(2f, 1f);
-
+            
             drawer2D.BeginDrawSprite();
             drawer2D.DrawSprite(circleSprite);
             drawer2D.DrawSprite(ticksSprite);

@@ -69,7 +69,7 @@ namespace TGC.Group.Model
             car.getMesh().Technique = "ColissionAndLight";
             car.render();
             velocimetro.render(DrawText, car.getVelocity());
-            energy.render();
+            energy.render(car.getEnergy());
             DrawText.drawText("Energy: " + car.getEnergy(), 800, 600, Color.Yellow);
             smokeParticles.render(ElapsedTime);
             fireParticles.render(ElapsedTime);
