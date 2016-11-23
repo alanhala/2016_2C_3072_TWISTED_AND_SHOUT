@@ -2,6 +2,7 @@
 using Microsoft.DirectX.Direct3D;
 using System.Drawing;
 using Microsoft.DirectX;
+using TGC.Core.Collision;
 using TGC.Core.Example;
 using TGC.Core.SceneLoader;
 using TGC.Core.Shaders;
@@ -61,9 +62,16 @@ namespace TGC.Group.Model
             effect.SetValue("carDamaged", car.isDamaged());
             foreach (var mesh in scene.Meshes)
             {
-                mesh.Effect = effect;
-                mesh.Technique = "Light";
-                mesh.render();
+                if (mesh.Enabled)
+                {
+                    var r = TgcCollisionUtils.classifyFrustumAABB(Frustum, mesh.BoundingBox);
+                    if (r != TgcCollisionUtils.FrustumResult.OUTSIDE)
+                    {
+                        mesh.Effect = effect;
+                        mesh.Technique = "Light";
+                        mesh.render();
+                    }
+                }
             }
             car.getMesh().Effect = effect;
             car.getMesh().Technique = "ColissionAndLight";
