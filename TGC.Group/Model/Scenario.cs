@@ -8,6 +8,7 @@ using TGC.Core.Shaders;
 using TGC.Core.Utils;
 using TGC.Group.Model.Camera;
 using TGC.Group.Model.Particles;
+using TGC.Group.Model.HUD;
 
 namespace TGC.Group.Model
 {
@@ -19,7 +20,9 @@ namespace TGC.Group.Model
         private Velocimetro velocimetro;
         private SmokeParticle smokeParticles;
         private FireParticles fireParticles;
-        public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
+        private Energy energy;
+        
+	public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
             Category = Game.Default.Category;
             Name = Game.Default.Name;
@@ -36,6 +39,7 @@ namespace TGC.Group.Model
             velocimetro = new Velocimetro();
             smokeParticles = new SmokeParticle(car);
             fireParticles = new FireParticles(car);
+            energy = new Energy();
         }
 
         public override void Update()
@@ -65,6 +69,7 @@ namespace TGC.Group.Model
             car.getMesh().Technique = "ColissionAndLight";
             car.render();
             velocimetro.render(DrawText, car.getVelocity());
+            energy.render();
             DrawText.drawText("Energy: " + car.getEnergy(), 800, 600, Color.Yellow);
             smokeParticles.render(ElapsedTime);
             fireParticles.render(ElapsedTime);
