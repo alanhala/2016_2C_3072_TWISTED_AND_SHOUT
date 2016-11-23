@@ -17,7 +17,8 @@ namespace TGC.Group.Model
         private Car car;
         private TwistedCamera camera;
         private Velocimetro velocimetro;
-        private SmokeParticle emitter;
+        private SmokeParticle smokeParticles;
+        private FireParticles fireParticles;
         public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
             Category = Game.Default.Category;
@@ -33,17 +34,16 @@ namespace TGC.Group.Model
             camera = new TwistedCamera(Input, car, scene, 100f, 250f);
             Camara = camera;
             velocimetro = new Velocimetro();
-            emitter = new SmokeParticle(car);
+            smokeParticles = new SmokeParticle(car);
+            fireParticles = new FireParticles(car);
         }
 
         public override void Update()
         {
             PreUpdate();
             car.move(Input, ElapsedTime);
-            if (emitter != null) {
-                emitter.update();
-            }
-            
+            smokeParticles.update();
+            fireParticles.update();
         }
 
         public override void Render()
@@ -66,7 +66,8 @@ namespace TGC.Group.Model
             car.render();
             velocimetro.render(DrawText, car.getVelocity());
             DrawText.drawText("Energy: " + car.getEnergy(), 800, 600, Color.Yellow);
-            emitter.render(ElapsedTime);
+            smokeParticles.render(ElapsedTime);
+            fireParticles.render(ElapsedTime);
             PostRender();
         }
 
@@ -74,6 +75,8 @@ namespace TGC.Group.Model
         {
             scene.disposeAll();
             car.dispose();
+            smokeParticles.dispose();
+            fireParticles.dispose();
         }
     }
 }

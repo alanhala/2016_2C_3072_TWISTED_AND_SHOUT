@@ -93,6 +93,7 @@
     <Compile Include="Model\HUD\Drawer2D.cs" />
     <Compile Include="Model\HUD\CustomBitmap.cs" />
     <Compile Include="Model\HUD\CustomSprite.cs" />
+    <Compile Include="Model\Particles\FireParticles.cs" />
     <Compile Include="Model\Particles\SmokeParticle.cs" />
     <Compile Include="Model\Scenario.cs" />
     <Compile Include="Model\GameModel.cs" />
