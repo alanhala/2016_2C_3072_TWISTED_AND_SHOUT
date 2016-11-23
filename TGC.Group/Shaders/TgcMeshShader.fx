@@ -236,12 +236,12 @@ technique DIFFUSE_MAP_AND_LIGHTMAP
 
 float3 AmbientLightPosition = float3(1000, 10000, 0);
 float3 AmbientLightColor = float3(1, 1, 1);
-float AmbientLightIntensity = 500;
+float AmbientLightIntensity = 800;
 float AmbientLightAttenuation = 0.2f;
 
 float4 CarLightPosition;
 float CarLightAttenuation = 0.1f;
-float CarLightIntensity = 150;
+float CarLightIntensity = 75;
 float3 SpotLightDir;
 float SpotLightAngleCos;
 float SpotLightExponent = 7;

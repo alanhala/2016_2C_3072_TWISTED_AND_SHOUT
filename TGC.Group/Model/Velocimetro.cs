@@ -50,11 +50,8 @@ namespace TGC.Group.Model
 
         public void render(TgcText2D text, float velocityFloat)
         {
-            if (velocityFloat < 0)
-                needleSprite.Rotation = (FastMath.PI / 4 * velocityFloat * 0.05f);
-            else
-                needleSprite.Rotation = FastMath.PI / 4 * velocityFloat * 0.05f;
-
+            if (velocityFloat <= 0) velocityFloat = 0;
+            needleSprite.Rotation = FastMath.ToRad(60 + velocityFloat / 4f);
             drawer2D.BeginDrawSprite();
             drawer2D.DrawSprite(circleSprite);
             drawer2D.DrawSprite(ticksSprite);
