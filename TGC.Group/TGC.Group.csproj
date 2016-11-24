@@ -85,6 +85,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Game.settings</DependentUpon>
     </Compile>
+    <Compile Include="Model\Bullet.cs" />
     <Compile Include="Model\Camera\TwistedCamera.cs" />
     <Compile Include="Model\CarCollisionDetection.cs" />
     <Compile Include="Model\Car\Car.cs" />

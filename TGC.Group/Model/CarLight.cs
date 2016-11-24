@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.DirectX;
+﻿using Microsoft.DirectX;
 using TGC.Core.Geometry;
-using TGC.Core.SceneLoader;
 
 namespace TGC.Group.Model
 {
@@ -24,7 +18,7 @@ namespace TGC.Group.Model
 
         public void updateLightPosition()
         {
-            var matrix = Matrix.Translation(new Vector3(0, 20, -40)) * Matrix.RotationY(car.getRotationAngle())
+            var matrix = Matrix.Translation(new Vector3(0, 20, -50)) * Matrix.RotationY(car.getRotationAngle())
                          * Matrix.Translation(car.getPosition());
             position = new Vector3(matrix.M41, matrix.M42, matrix.M43);
             mesh.Transform = matrix;
