@@ -15,12 +15,12 @@ namespace TGC.Group.Model
         private float deceleration;
         private float velocity = 0f;
 
-        private Vector3 initialDirection;
-        private Vector4 currentDirection = new Vector4();
-        private Vector3 relativePosition = new Vector3(0, 0, 0);
-        private Vector3 lastRelativePosition;
-        private float rotationAngle = (float)Math.PI;
-        private float lastRotationAngle;
+        protected Vector3 initialDirection;
+        protected Vector4 currentDirection = new Vector4();
+        protected Vector3 relativePosition = new Vector3(0, 0, 0);
+        protected Vector3 lastRelativePosition;
+        protected float rotationAngle = (float)0;
+        protected float lastRotationAngle;
         
         private bool isJumping;
         private float timeJumping;
@@ -45,7 +45,7 @@ namespace TGC.Group.Model
             return new Vector3(currentDirection.X, currentDirection.Y, currentDirection.Z);
         }
 
-        public void updateCarPosition(TgcD3dInput input, float elapsedTime)
+        public virtual void updateCarPosition(TgcD3dInput input, float elapsedTime)
         {
             saveCurrentState();
             setUpJumpAcceleration(input);
@@ -57,7 +57,7 @@ namespace TGC.Group.Model
             relativePosition.Z += currentDirection.Z * velocity * elapsedTime;
         }
 
-        private void saveCurrentState()
+        protected void saveCurrentState()
         {
             lastRelativePosition = relativePosition;
             lastRotationAngle = rotationAngle;

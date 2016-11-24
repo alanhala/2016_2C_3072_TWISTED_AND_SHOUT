@@ -28,8 +28,10 @@ namespace TGC.Group.Model
         private TgcMp3Player mp3Player = new TgcMp3Player();
         private TgcPickingRay pickingRay;
         private Bullet bullet;
+        private Car enemy;
+        private FireParticles enemyFireParticles;
 
-	    public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
+        public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
             Category = Game.Default.Category;
             Name = Game.Default.Name;
@@ -40,12 +42,16 @@ namespace TGC.Group.Model
         {
             var loader = new TgcSceneLoader();
             scene = loader.loadSceneFromFile(MediaDir + "city-TgcScene.xml");
-            car = new Car(scene);
+            var carMovement = new CarMovement(new Vector3(0, 0, 1), 300, -70, -600);
+            enemy = new Car(scene.Meshes, new EnemyMovement(carMovement));
+            car = new Car(scene.Meshes, carMovement);
+            enemy.position = new Vector3(0, 20, 50);
             camera = new TwistedCamera(Input, car, scene, 50f, 200f);
             Camara = camera;
             velocimetro = new Velocimetro();
             smokeParticles = new SmokeParticle(car);
             fireParticles = new FireParticles(car);
+            enemyFireParticles = new FireParticles(enemy);
             energy = new Energy();
             mp3Player.FileName = MediaDir + "demo.mp3";
             mp3Player.play(true);
@@ -68,12 +74,14 @@ namespace TGC.Group.Model
                     if (TgcCollisionUtils.intersectRayAABB(pickingRay.Ray, mesh.BoundingBox, out newPosition))
                     {
                         bullet.enable();
-                        bullet.init(car.getPosition(), newPosition);
+                        bullet.init(car.getPosition(), newPosition, enemy);
                         break;
                     }
                 }
             }
             bullet.update(ElapsedTime);
+            enemy.move(Input, ElapsedTime);
+            enemyFireParticles.update();
         }
 
         public override void Render()
@@ -98,6 +106,9 @@ namespace TGC.Group.Model
                     }
                 }
             }
+            enemy.getMesh().Effect = effect;
+            enemy.getMesh().Technique = "ColissionAndLight";
+            enemy.render();
             car.getMesh().Effect = effect;
             car.getMesh().Technique = "ColissionAndLight";
             car.render();
@@ -105,7 +116,9 @@ namespace TGC.Group.Model
             energy.render(car.getEnergy());
             smokeParticles.render(ElapsedTime);
             fireParticles.render(ElapsedTime);
+            enemyFireParticles.render(ElapsedTime);
             bullet.render();
+            DrawText.drawText("ENERGIA DEL ENEMIGO: " + (Math.Max(enemy.getEnergy(), 0)), 300, 200, Color.Yellow);
             PostRender();
         }
 

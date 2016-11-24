@@ -14,7 +14,7 @@ namespace TGC.Group.Model
         private CarMovement carMovement;
         private List<Wheel> backWheels;
         private List<Wheel> frontWheels;
-        private Vector3 position = new Vector3(0, 20, 0);
+        public Vector3 position = new Vector3(0, 20, 0);
         public TgcBoundingOrientedBox boundingBox;
         private CarCollisionDetection carCollisionDetection;
         private double energy;
@@ -22,17 +22,17 @@ namespace TGC.Group.Model
         private CarLight light;
         private TgcMp3Player mp3Player = new TgcMp3Player();
 
-        public Car(TgcScene scene)
+        public Car(List<TgcMesh> meshes, CarMovement carMovement)
         {
             var loader = new TgcSceneLoader();
             mesh = loader.loadSceneFromFile(Game.Default.MediaDirectory
                 + "Auto\\Auto-TgcScene.xml").Meshes[0];
             mesh.AutoTransformEnable = false;
-            carMovement = new CarMovement(new Vector3(0, 0, 1), 300, -70, -600);
+            this.carMovement = carMovement;
             boundingBox = TgcBoundingOrientedBox.computeFromPoints(mesh.getVertexPositions());
             boundingBox.move(position);
             createWheels(loader);
-            carCollisionDetection = new CarCollisionDetection(this, scene);
+            carCollisionDetection = new CarCollisionDetection(this, meshes);
             energy = 100;
             light = new CarLight(this);
             mp3Player.FileName = Game.Default.MediaDirectory + "crash.mp3";
@@ -175,6 +175,11 @@ namespace TGC.Group.Model
             }
 
             return false;
+        }
+
+        public void hitWithBullet()
+        {
+            energy -= 30;
         }
     }
 }

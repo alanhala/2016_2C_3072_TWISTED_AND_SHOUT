@@ -11,17 +11,17 @@ namespace TGC.Group.Model
     class CarCollisionDetection
     {
         private Car car;
-        private TgcScene scene;
+        private List<TgcMesh> meshes;
 
-        public CarCollisionDetection(Car car, TgcScene scene)
+        public CarCollisionDetection(Car car, List<TgcMesh> meshes)
         {
             this.car = car;
-            this.scene = scene;
+            this.meshes = meshes;
         }
 
         public Boolean hasCollisioned()
         {
-            foreach (var mesh in scene.Meshes)
+            foreach (var mesh in meshes)
             {
                 var sceneMeshBoundingBox = mesh.BoundingBox;
 

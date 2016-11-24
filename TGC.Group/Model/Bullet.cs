@@ -1,6 +1,8 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Drawing.Printing;
 using Microsoft.DirectX;
+using TGC.Core.Collision;
 using TGC.Core.Geometry;
 using TGC.Core.Particle;
 using TGC.Core.SceneLoader;
@@ -13,6 +15,7 @@ namespace TGC.Group.Model
         private bool enabled;
         private Vector3 finalPosition;
         private Vector3 currentPositon;
+        private Car target;
 
         public Bullet()
         {
@@ -30,10 +33,11 @@ namespace TGC.Group.Model
             enabled = false;
         }
 
-        public void init(Vector3 rayOrigin, Vector3 newPosition)
+        public void init(Vector3 rayOrigin, Vector3 newPosition, Car enemy)
         {
             currentPositon = rayOrigin;
             finalPosition = newPosition;
+            target = enemy;
         }
 
         public void render()
@@ -41,6 +45,7 @@ namespace TGC.Group.Model
             if (!enabled) return;
             mesh.Transform = Matrix.Translation(currentPositon);
             mesh.render();
+            mesh.BoundingBox.render();
         }
 
         public void dispose()
@@ -51,6 +56,12 @@ namespace TGC.Group.Model
         public void update(float elapsedTime)
         {
             if (!enabled) return;
+            if (TgcCollisionUtils.testObbAABB(target.boundingBox, mesh.BoundingBox))
+            {
+                disable();
+                target.hitWithBullet();
+                return;
+            }
             var posDiff = finalPosition - currentPositon;
             var posDiffLength = posDiff.LengthSq();
             if (posDiffLength > float.Epsilon)
@@ -63,7 +74,7 @@ namespace TGC.Group.Model
                 {
                     newPos = finalPosition;
                 }
-
+                mesh.BoundingBox.move(newPos - mesh.BoundingBox.Position);
                 currentPositon = newPos;
             }
             else
