@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TGC.Core.BoundingVolumes;
 using TGC.Core.Input;
 using TGC.Core.SceneLoader;
+using TGC.Core.Sound;
 
 namespace TGC.Group.Model
 {
@@ -19,6 +20,7 @@ namespace TGC.Group.Model
         private double energy;
         private float elapsedTime;
         private CarLight light;
+        private TgcMp3Player mp3Player = new TgcMp3Player();
 
         public Car(TgcScene scene)
         {
@@ -33,6 +35,7 @@ namespace TGC.Group.Model
             carCollisionDetection = new CarCollisionDetection(this, scene);
             energy = 100;
             light = new CarLight(this);
+            mp3Player.FileName = Game.Default.MediaDirectory + "crash.mp3";
         }
 
         private void createWheels(TgcSceneLoader loader)
@@ -85,6 +88,7 @@ namespace TGC.Group.Model
         public void dispose()
         {
             mesh.dispose();
+            mp3Player.closeFile();
         }
 
         public Vector3 getPosition()
@@ -116,6 +120,12 @@ namespace TGC.Group.Model
         {
             if (carCollisionDetection.hasCollisioned())
             {
+                if (mp3Player.getStatus() != TgcMp3Player.States.Playing)
+                {
+                    if (mp3Player.getStatus() == TgcMp3Player.States.Stopped) 
+                        mp3Player.closeFile();
+                    mp3Player.play(false);
+                }
                 boundingBox.move(-carMovement.getPositionDiff());
                 boundingBox.rotate(new Vector3(0, -carMovement.getRotationAngleDiff(), 0));
                 energy -= (Math.Abs(Math.Round(carMovement.getVelocity() / 40)));

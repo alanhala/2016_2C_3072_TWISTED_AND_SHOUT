@@ -10,6 +10,7 @@ using TGC.Core.Utils;
 using TGC.Group.Model.Camera;
 using TGC.Group.Model.Particles;
 using TGC.Group.Model.HUD;
+using TGC.Core.Sound;
 
 namespace TGC.Group.Model
 {
@@ -22,8 +23,9 @@ namespace TGC.Group.Model
         private SmokeParticle smokeParticles;
         private FireParticles fireParticles;
         private Energy energy;
-        
-	public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
+        private TgcMp3Player mp3Player = new TgcMp3Player();
+
+        public Scenario(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
             Category = Game.Default.Category;
             Name = Game.Default.Name;
@@ -41,6 +43,8 @@ namespace TGC.Group.Model
             smokeParticles = new SmokeParticle(car);
             fireParticles = new FireParticles(car);
             energy = new Energy();
+            mp3Player.FileName = MediaDir + "demo.mp3";
+            mp3Player.play(true);
         }
 
         public override void Update()
